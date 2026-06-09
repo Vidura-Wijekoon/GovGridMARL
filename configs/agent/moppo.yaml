@@ -1,0 +1,5 @@
+name: moppo
+_target_: govgridmarl.agents.moppo.MOPPOAgent
+lr: 3.0e-4
+gamma: 0.99
+objectives: [efficiency, fairness]

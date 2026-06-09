@@ -1,0 +1,7 @@
+# Evaluation protocol (m3-t7)
+metrics: [peak_reduction, cost, episode_return, jain_index, violation_rate]
+n_eval_episodes: 20
+targets:                    # Phase-2 acceptance thresholds (m4-t10)
+  peak_reduction_pct: 15.0
+  jain_index: 0.85
+  violation_rate: 0.0

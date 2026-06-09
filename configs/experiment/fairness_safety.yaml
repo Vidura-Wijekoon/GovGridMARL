@@ -1,0 +1,6 @@
+# @package _global_
+# Phase-2: fairness + safety constrained MAPPO on IEEE-14.
+defaults:
+  - override /env: ieee14
+  - override /agent: mappo_lagrangian
+  - override /reward: safety

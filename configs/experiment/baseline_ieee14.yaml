@@ -1,0 +1,6 @@
+# @package _global_
+# Phase-1 baseline: MAPPO convergence on IEEE-14 (Phase-1 milestone).
+defaults:
+  - override /env: ieee14
+  - override /agent: mappo
+  - override /reward: efficiency

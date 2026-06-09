@@ -1,0 +1,9 @@
+name: mappo_lagrangian
+_target_: govgridmarl.agents.mappo.MAPPOAgent
+lr: 3.0e-4
+gamma: 0.99
+clip_eps: 0.2
+centralised_critic: true
+constrained:
+  method: pid_lagrangian   # lagrangian | pid_lagrangian (m5-t6)
+  multiplier_lr: 1.0e-3

@@ -1,0 +1,9 @@
+name: safety
+weights:
+  peak: 1.0
+  cost: 0.5
+  fairness: 0.5
+  comfort: 0.1
+constraints:                # consumed by the Lagrangian agent (Phase 2)
+  voltage: {v_min: 0.95, v_max: 1.05}
+  no_blackout: true

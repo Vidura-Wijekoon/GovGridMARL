@@ -1,0 +1,6 @@
+total_timesteps: 1_000_000
+n_envs: 8
+batch_size: 2048
+n_epochs: 10
+seeds: [0, 1, 2, 3, 4]     # >= 5 seeds for significance (m3-t9)
+checkpoint_every: 50_000

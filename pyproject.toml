@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "govgridmarl"
+version = "0.1.0"
+description = "Governance-aware Multi-Agent RL for residential smart-grid demand response (safe, fair, private, explainable, auditable)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Vidura" }]
+keywords = [
+    "multi-agent reinforcement learning", "demand response", "smart grid",
+    "safe RL", "fairness", "federated learning", "differential privacy",
+    "explainable AI", "AI governance", "EU AI Act",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Runtime deps are pinned reproducibly in environment.yml / requirements.lock
+# during task m1-t2. Listed here unpinned for `pip install -e .` convenience.
+dependencies = [
+    "numpy",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+# Heavy / research deps installed via environment.yml; grouped here for clarity.
+rl = ["torch", "pettingzoo", "grid2op", "pandapower"]
+xai = ["shap", "lime"]
+track = ["hydra-core", "wandb", "mlflow"]
+dev = ["pytest", "pytest-cov", "ruff", "black", "mypy", "pre-commit"]
+
+[project.urls]
+Homepage = "https://github.com/Vidura-Wijekoon/GovGridMARL"
+Repository = "https://github.com/Vidura-Wijekoon/GovGridMARL"
+
+[project.scripts]
+govgrid-train = "experiments.train:main"
+
+[tool.setuptools.packages.find]
+where = ["src", "envs"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["src", "envs"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "envs", "experiments", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_unused_ignores = true

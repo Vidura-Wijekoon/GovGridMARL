@@ -1,0 +1,38 @@
+# Reproducible conda environment for GovGridMARL.
+# NOTE: versions are finalised and locked in task m1-t2 (environment.yml / requirements.lock).
+name: govgridmarl
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - pyyaml
+  - pip:
+      # --- RL core ---
+      - torch
+      - pettingzoo
+      - grid2op
+      - pandapower
+      # --- governance stack ---
+      - shap
+      - lime
+      # --- tracking & config ---
+      - hydra-core
+      - wandb
+      - mlflow
+      # --- privacy (Phase 3) ---
+      - opacus
+      # --- dev ---
+      - pytest
+      - pytest-cov
+      - ruff
+      - black
+      - mypy
+      - pre-commit
+      - -e .

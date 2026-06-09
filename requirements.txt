@@ -1,0 +1,23 @@
+# Pip fallback. Authoritative pinned lockfile (requirements.lock) is produced in m1-t2.
+numpy
+pandas
+scipy
+matplotlib
+pyyaml
+torch
+pettingzoo
+grid2op
+pandapower
+shap
+lime
+hydra-core
+wandb
+mlflow
+opacus
+pytest
+pytest-cov
+ruff
+black
+mypy
+pre-commit
+-e .

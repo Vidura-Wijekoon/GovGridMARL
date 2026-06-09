@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "GovGridMARL: Governance-Aware Multi-Agent Reinforcement Learning for Residential Smart-Grid Demand Response"
+abstract: >-
+  A constrained multi-agent reinforcement learning framework for residential
+  smart-grid demand response that integrates fairness, safety, federated
+  privacy, explainability, and runtime governance aligned with the EU AI Act.
+authors:
+  - family-names: "Vidura"
+    given-names: ""
+version: 0.1.0
+date-released: "2026-06-09"
+license: MIT
+repository-code: "https://github.com/Vidura-Wijekoon/GovGridMARL"
+keywords:
+  - multi-agent reinforcement learning
+  - smart grid
+  - demand response
+  - safe reinforcement learning
+  - fairness
+  - federated learning
+  - differential privacy
+  - explainable AI
+  - AI governance

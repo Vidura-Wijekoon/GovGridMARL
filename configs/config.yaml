@@ -1,0 +1,19 @@
+# Root Hydra configuration for GovGridMARL.
+# Compose with: python experiments/train.py env=ieee14 agent=mappo reward=efficiency
+defaults:
+  - env: ieee14
+  - agent: mappo
+  - reward: efficiency
+  - train: default
+  - eval: default
+  - _self_
+
+seed: 42
+device: auto            # auto | cpu | cuda
+output_dir: results/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+# Experiment tracking (configured in task m1-t4)
+tracking:
+  backend: wandb        # wandb | mlflow | none
+  project: govgridmarl
+  entity: null

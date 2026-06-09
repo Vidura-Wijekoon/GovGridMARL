@@ -1,0 +1,10 @@
+name: dp_fedavg
+federated:
+  rounds: 100
+  clients_per_round: 14
+  aggregation: fedavg
+differential_privacy:
+  enabled: true
+  target_epsilon: 1.0       # Phase 3 milestone: epsilon <= 1.0
+  delta: 1.0e-5
+  max_grad_norm: 1.0

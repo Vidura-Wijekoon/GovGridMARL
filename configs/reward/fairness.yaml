@@ -1,0 +1,6 @@
+name: fairness
+weights:
+  peak: 1.0
+  cost: 0.5
+  fairness: 0.5     # Jain-index term (Phase 2 target: Jain >= 0.85)
+  comfort: 0.1
