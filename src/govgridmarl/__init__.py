@@ -22,7 +22,7 @@ evaluation      Metrics and evaluation protocol.
 utils           Seeding, logging, and shared helpers.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Vidura"
 
 __all__ = ["__version__", "__author__"]

@@ -1,23 +1,6 @@
-# Pip fallback. Authoritative pinned lockfile (requirements.lock) is produced in m1-t2.
-numpy
-pandas
-scipy
-matplotlib
-pyyaml
-torch
-pettingzoo
-grid2op
-pandapower
-shap
-lime
-hydra-core
-wandb
-mlflow
-opacus
-pytest
-pytest-cov
-ruff
-black
-mypy
-pre-commit
--e .
+# Dependencies are pinned in two files:
+#   requirements.lock : fully pinned transitive closure  -> install this
+#   requirements.in   : human-edited direct dependencies -> edit, then recompile
+# Reproducible install:
+#   pip install -r requirements.lock      (or: conda env create -f environment.yml)
+-r requirements.lock

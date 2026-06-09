@@ -89,16 +89,24 @@ git clone https://github.com/Vidura-Wijekoon/GovGridMARL.git
 cd GovGridMARL
 
 # Option A — conda (recommended; full research stack)
-bash scripts/setup_env.sh
+conda env create -f environment.yml
 conda activate govgridmarl
 
-# Option B — pip / venv (lightweight)
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+# Option B — uv (fast) or pip, from the pinned lock
+uv venv --python 3.11 && source .venv/bin/activate
+uv pip install -r requirements.lock && uv pip install -e .
+
+# One-shot helper (auto-detects conda/uv/pip)
+bash scripts/setup_env.sh
 ```
 
-Exact versions are pinned into `environment.yml` / `requirements.lock` in
-roadmap task **m1-t2**.
+Dependencies are fully pinned (task **m1-t2**): `environment.yml` (conda) and
+`requirements.lock` (179-package transitive closure, resolved for Python 3.11
+/ Linux) — both validated by an IEEE-14 power-flow run. Edit `requirements.in`
+and recompile with
+`uv pip compile requirements.in -o requirements.lock --python-version 3.11 --python-platform linux`.
+`torch==2.12.0` ships CUDA 13 wheels; for CPU-only or another CUDA, install
+torch from the matching [PyTorch index](https://pytorch.org/get-started/locally/).
 
 ## Quickstart
 

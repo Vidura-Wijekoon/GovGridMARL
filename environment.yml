@@ -1,38 +1,55 @@
-# Reproducible conda environment for GovGridMARL.
-# NOTE: versions are finalised and locked in task m1-t2 (environment.yml / requirements.lock).
+# ============================================================================
+# GovGridMARL — reproducible conda environment (task m1-t2)
+# ----------------------------------------------------------------------------
+#   conda env create -f environment.yml
+#   conda activate govgridmarl
+# Pins below match requirements.lock (the exact transitive closure, 179 pkgs).
+# Resolved 2026-06-10 for Python 3.11. torch 2.12 ships CUDA 13 wheels (GPU).
+#   CPU-only : pip install torch==2.12.0 --index-url https://download.pytorch.org/whl/cpu
+#   Other CUDA: pick the matching index at https://pytorch.org/get-started/locally/
+# ============================================================================
 name: govgridmarl
 channels:
   - conda-forge
-  - pytorch
-  - nvidia
 dependencies:
   - python=3.11
-  - pip
-  - numpy
-  - pandas
-  - scipy
-  - matplotlib
-  - pyyaml
+  - pip>=24
   - pip:
-      # --- RL core ---
-      - torch
-      - pettingzoo
-      - grid2op
-      - pandapower
-      # --- governance stack ---
-      - shap
-      - lime
-      # --- tracking & config ---
-      - hydra-core
-      - wandb
-      - mlflow
-      # --- privacy (Phase 3) ---
-      - opacus
-      # --- dev ---
-      - pytest
-      - pytest-cov
-      - ruff
-      - black
-      - mypy
-      - pre-commit
+      # --- Multi-agent RL core ---
+      - torch==2.12.0
+      - pettingzoo==1.26.1
+      - supersuit==3.11.0
+      - gymnasium==1.3.0
+      # --- Power-systems simulation ---
+      - grid2op==1.12.4
+      - pandapower==3.4.0
+      - lightsim2grid==0.13.1
+      # --- Governance: explainability ---
+      - shap==0.49.1
+      - lime==0.2.0.1
+      # --- Governance: privacy (FL + DP) ---
+      - opacus==1.6.0
+      # --- Config & experiment tracking ---
+      - hydra-core==1.3.2
+      - wandb==0.27.2
+      - mlflow==3.13.0
+      - tensorboard==2.20.0
+      # --- Scientific base / IO / viz ---
+      - numpy==2.3.5
+      - pandas==2.3.3
+      - scipy==1.16.3
+      - numba==0.65.1
+      - matplotlib==3.10.9
+      - seaborn==0.13.2
+      - pyyaml==6.0.3
+      - tqdm==4.68.2
+      - rich==15.0.0
+      # --- Dev tooling ---
+      - pytest==9.0.3
+      - pytest-cov==7.1.0
+      - ruff==0.15.16
+      - black==26.5.1
+      - mypy==2.1.0
+      - pre-commit==4.6.0
+      # --- Editable install of this project ---
       - -e .
