@@ -1,0 +1,15 @@
+# @package _global_
+# Phase-2, Month 4: fairness-augmented MAPPO on IEEE-14 (m4-t5 / m4-t6).
+# Usage (one point of the Pareto sweep):
+#   python experiments/train.py +experiment=fairness_sweep reward.weights.fairness=2.0 seed=0 run_tag=wf2.0
+# Form ablation:
+#   python experiments/train.py +experiment=fairness_sweep env.fairness_form=gap env.fairness_basis=fraction
+defaults:
+  - override /env: ieee14
+  - override /agent: mappo
+  - override /reward: fairness
+train:
+  total_timesteps: 120_000
+  eval_every: 10
+tracking:
+  backend: none

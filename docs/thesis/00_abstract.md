@@ -1,0 +1,3 @@
+*(Abstract — written in Month 12, task m12-t5.)*
+
+GovGridMARL is a governance-aware multi-agent reinforcement-learning framework for residential demand response. Fourteen household-cluster agents on the IEEE-14 network learn curtailment policies that reduce the evening peak while explicit fairness and safety constraints, a federated privacy layer, per-decision explanations and a tamper-evident audit log turn governance requirements into engineering constraints. Phase 1 established the efficiency-only baseline (MAPPO, 15.5 % peak reduction, Jain 0.66, 29 % violating hours); Phase 2 added a multi-objective fairness formulation and Lagrangian safety constraints (Chapters 4–5).

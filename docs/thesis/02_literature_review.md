@@ -1,0 +1,1 @@
+*(Chapter 2 — the review paper source `docs/lit_notes/review_paper_source.md` (105 papers, six themes) is folded in here; the governance-gap synthesis is `docs/design/governance_gap.md`. Finalised in Month 11, task m11-t10.)*

@@ -1,0 +1,12 @@
+# @package _global_
+# Phase-2, Month 4: preference-conditioned MOPPO on IEEE-14 (m4-t8).
+#   python experiments/train.py +experiment=moppo_ieee14 seed=0
+defaults:
+  - override /env: ieee14
+  - override /agent: moppo
+  - override /reward: fairness
+train:
+  total_timesteps: 120_000
+  eval_every: 10
+tracking:
+  backend: none

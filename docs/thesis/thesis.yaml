@@ -1,0 +1,21 @@
+# Thesis build specification (task m1-t12; see docs/thesis/README.md and scripts/build_thesis.py).
+title: "GovGridMARL: Governance-Aware Multi-Agent Reinforcement Learning for Residential Smart-Grid Demand Response"
+author: "Vidura"
+degree: "MSc Artificial Intelligence & Data Science — Master thesis"
+institution: "(faculty / university)"
+supervisor: "(supervisor)"
+submission: "May 2027"
+chapters:
+  - {file: 00_abstract.md,            title: "Abstract",                       unnumbered: true}
+  - {file: 01_introduction.md,        title: "Introduction",                   number: 1}
+  - {file: 02_literature_review.md,   title: "Literature review",              number: 2}
+  - {file: methods_draft.md,          title: "Methods",                        number: 3}
+  - {file: fairness_section.md,       title: "Fairness: multi-objective demand response", number: 4}
+  - {file: safety_section.md,         title: "Safety: constrained learning",   number: 5}
+  - {file: 06_privacy.md,             title: "Privacy: federated learning and differential privacy", number: 6}
+  - {file: 07_explainability.md,      title: "Explainability",                 number: 7}
+  - {file: 08_governance.md,          title: "Governance layer and compliance", number: 8}
+  - {file: 09_evaluation.md,          title: "Integrated evaluation",          number: 9}
+  - {file: 10_discussion.md,          title: "Discussion",                     number: 10}
+  - {file: 11_conclusion.md,          title: "Conclusion and future work",     number: 11}
+  - {file: 99_references.md,          title: "References",                     unnumbered: true}

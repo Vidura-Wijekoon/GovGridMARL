@@ -1,5 +1,20 @@
-name: moppo
-_target_: govgridmarl.agents.moppo.MOPPOAgent
+name: moppo        # preference-conditioned multi-objective MAPPO (m4-t8)
+_target_: govgridmarl.agents.make_agent
 lr: 3.0e-4
 gamma: 0.99
-objectives: [efficiency, fairness]
+gae_lambda: 0.95
+clip_eps: 0.2
+entropy_coef: 0.01
+value_coef: 0.5
+max_grad_norm: 0.5
+n_epochs: 10
+n_minibatches: 4
+hidden: [128, 128]
+share_params: true
+normalize_advantage: true
+value_clip: true
+# multi-objective specifics (objectives: efficiency, fairness)
+lambda_max: 8.0          # preferences lambda ~ U(0, lambda_max) per episode
+eval_lambda: 2.0         # preference used by the in-training evaluation
+grid_prob: 0.3           # share of episodes drawn from lambda_grid instead of U(0, lambda_max)
+lambda_grid: [0.0, 0.5, 1.0, 2.0, 4.0, 8.0]
