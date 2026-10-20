@@ -1,9 +1,28 @@
-name: mappo_lagrangian
-_target_: govgridmarl.agents.mappo.MAPPOAgent
+name: mappo_lagrangian   # constrained MAPPO: cost critics + Lagrange multipliers (m5-t3 .. m5-t6)
+_target_: govgridmarl.agents.make_agent
 lr: 3.0e-4
 gamma: 0.99
+gae_lambda: 0.95
 clip_eps: 0.2
-centralised_critic: true
-constrained:
-  method: pid_lagrangian   # lagrangian | pid_lagrangian (m5-t6)
-  multiplier_lr: 1.0e-3
+entropy_coef: 0.01
+value_coef: 0.5
+max_grad_norm: 0.5
+n_epochs: 10
+n_minibatches: 4
+hidden: [128, 128]
+share_params: true
+normalize_advantage: true
+value_clip: true
+# constrained-RL specifics
+constraints: [voltage, loading, comfort]   # add `fairness` for the joint agent (m5-t10)
+limits: {}                                  # episode budgets d_k; default 0 = zero violations
+method: pid_lagrangian                      # lagrangian | pid_lagrangian (m5-t6)
+multiplier_lr: 0.05                         # dual-ascent rate (lagrangian) / K_i (pid)
+kp: 0.5
+ki: 0.05
+kd: 0.1
+max_multiplier: 20.0
+multiplier_init: 0.0
+multiplier_ema: 0.0
+cost_value_coef: 0.5
+cost_signal: indicator                      # indicator (violating hours) | magnitude (m5-t5 tuning)

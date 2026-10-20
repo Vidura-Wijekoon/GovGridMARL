@@ -63,3 +63,11 @@ Produced by `python experiments/evaluate.py` into `results/figures/` and `result
 | Stress reporting rule | on the stress and N-1 sets the target is *fewer violations than the unconstrained learner at equal peak reduction*, not zero | m5-t12 |
 
 Training runs for Phase 2 use 120k environment steps and 3 seeds (laptop, ≈ 6 min per run with 8 in parallel); the five-seed confirmation of the operating point is scheduled with the Phase-2 consolidation (m6-t4).
+
+## 7. Population rule (clarified 2026-10-20, logged per §0 rule)
+
+The synthetic household population is generated from the **training seed** (`GridMARLEnv(seed=cfg.seed)` → `generate_profiles(seed)`), so a policy trained with seed *k* has only ever seen population *k*. "Held-out" in §2 means held-out **days** (seeds 10 000–10 019, nominal demand) on the **training population**; this is what the trainer's in-run evaluation (`eval.csv`) has always done. `experiments/evaluate.py` (Phase 1) instead built population 42 for every policy, i.e. it reported a *transfer* result. Consequences:
+
+* `experiments/pareto.py` and `experiments/evaluate_phase2.py` evaluate each policy on its own population (3 seeds = 3 populations); fixed policies (no control, rule-based DR) are run on all three populations and averaged.
+* The population-42 result is kept as the explicit scenario `transfer_pop42` in `evaluate_phase2.py` (generalisation to unseen households).
+* Population 0 is the hardest of the three (no-control-relative peak reduction ≈ 12.5 % for every learner vs ≈ 15 % on populations 1 and 2); the Phase-1 figure of 15.5 % was a population-42 number. The Phase-1 tables are regenerated on the training populations in the Month-6 consolidation (m6-t6) — the Phase-1 gate (convergence, beats the rule-based reference) is unaffected because the rule-based policy is evaluated on the same population.

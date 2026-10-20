@@ -3,6 +3,85 @@
 All notable changes to this project are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); versioning is SemVer.
 
+## [0.5.0] - 2026-10-20 (Month 5 - safe RL & constraint satisfaction)
+### Added
+- Safety constraints (m5-t1/t2): `safety/constraints.py` (voltage band, thermal loading,
+  comfort, no-blackout proxy, fairness constraint; `ConstraintSet`), `docs/design/safety_constraints.md`;
+  env exposes `info["cost_vec"]` (magnitudes) and `info["cost_ind"]` (violating-step indicators),
+  per-constraint violation counts, `fairness_target(_basis)`, N-1 line outages
+  (`GridMARLEnv(contingency=k)`, `Ieee14PowerFlow.set_contingency`).
+- Constrained learners (m5-t3/t4/t6): `agents/lagrangian.py` - `LagrangianController`
+  (dual ascent / PID), `MAPPOLagrangianAgent`, `PPOLagrangianAgent`; cost critics and
+  hooks in `ppo_core.py`; cost GAE, episode-cost tracking and multiplier logging in the
+  trainer; configs `mappo_lagrangian`, `ppo_lagrangian`, experiment `fairness_safety`.
+- Evaluation (m5-t9/t11/t12/t13): `experiments/evaluate_phase2.py` - ablation, joint
+  target check, stress set, N-1 screening and tests, transfer-population scenario,
+  stochastic-policy columns, multiplier figures; `scripts/safety_feasibility.py`;
+  run scripts `run_phase2_month5.sh`, `run_phase2_month5b.sh`; 10 new tests (55 total).
+- Docs: `docs/reports/safety_results.md`, `docs/thesis/safety_section.md` (m5-t14),
+  `docs/logs/month5_log.md` with the meeting #4 agenda (m5-t15).
+### Changed
+- Lagrangian agents use the **indicator cost signal** by default (`cost_signal: indicator`):
+  magnitude episode costs are O(0.03) on IEEE-14 and leave dual ascent inert (m5-t5).
+- **Evaluation protocol section 7 (population rule):** policies are evaluated on the
+  population they were trained on (dataset seed = training seed); population 42 is a
+  transfer scenario. `pareto.py` / `evaluate_phase2.py` follow the rule; the Phase-1
+  `evaluate.py` numbers (15.5 %) are population-42 numbers - regenerated in m6-t6.
+- Version 0.5.0.
+### Validated (3 populations x 120k steps, 20 protocol days each)
+- All indicator-cost constrained learners: 0.000 violating hours (deterministic and
+  stochastic) vs 0.250 unconstrained (p < 1e-4), peak reduction unchanged (14.6 vs 14.7 %,
+  p >= 0.89), Jain relative 0.94-0.95. Joint agent: fairness and safety targets met on every
+  population, peak >= 15 % on 2 of 3 (13.0 / 15.4 / 15.3 %; the shortfall on population 0 is
+  shared by every learner incl. the Phase-1 baseline).
+- Multiplier sweep: no oscillation at any rate; eta = 1.0 overshoots (lambda 15.6, -1.9 pp peak).
+- N-1 / peak-demand stress: thermal overloads identical for every policy (unrelievable by
+  DR, planning case); comfort violations 0.23-0.28 -> 0.00-0.09 at equal peak reduction.
+- Transfer to unseen households: 0.21 violating hours (vs 0.30) - constraints are learned
+  per population; motivates the Month-9 runtime guardrail.
+
+## [0.4.0] - 2026-10-20 (Month 4 - multi-objective & fairness formulation)
+### Added
+- Fairness metrics (m4-t1): `fairness/metrics.py` - Jain on kWh and on relative burden
+  B_i/F_i, Gini, income-group gap ratio, vulnerable/other burden ratio, `fairness_report`;
+  vulnerability tags (m4-t2) in the synthetic generator and the UK-DALE/REDD loaders.
+- Fairness reward (m4-t3): `GridMARLEnv(fairness_form=jain|gap, fairness_basis=kwh|fraction)`,
+  per-step term F/T, unweighted objective vector `info["objectives"]`, new episode KPIs
+  (`jain_frac`, `gini_kwh`, `group_gap_ratio`, `vulnerable_burden_ratio`), trainer logs.
+- Scalarisation (m4-t4): `agents/scalarization.py` (WeightedSum, Chebyshev, LAMBDA_GRID);
+  MOPPO (m4-t8): `agents/moppo.py` preference-conditioned multi-objective MAPPO with a
+  vector critic; trainer multi-objective rollout path; `compute_gae` over trailing dims.
+- Pareto tooling (m4-t5/t9): `evaluation/pareto.py` (non-dominated set, 2-D hypervolume,
+  C-metric), `evaluation/targets.py` (`check_targets`), `experiments/pareto.py`
+  (sweep tables, significance, operating point, figures), `scripts/run_phase2_month4.sh`,
+  `scripts/fairness_feasibility.py`, Hydra experiments `fairness_sweep`, `moppo_ieee14`.
+- Docs: `docs/design/acceptance_thresholds.md` (m4-t10), `docs/reports/fairness_tradeoff.md`
+  (m4-t7/t12), `docs/thesis/fairness_section.md` (m4-t14), `docs/logs/month4_log.md` (m4-t15);
+  thesis build pipeline `docs/thesis/thesis.yaml` + `scripts/build_thesis.py`, `make thesis`
+  (closes m1-t12); evaluation protocol section 6; CI smoke for MOPPO and the constrained agent.
+### Changed
+- **Evaluation protocol amendment (rule 5 of the thresholds note):** the Phase-2 Jain gate
+  (>= 0.85) is evaluated on relative burden B_i/F_i instead of kWh burden. Reason: the
+  kWh region is empty for every policy on this population (flexible energy spans 0.81-5.91
+  kWh/home/day, ratio 7.3): scripted equal-fraction/equal-kWh blends reach at most 9.0 %
+  peak reduction at Jain_kWh >= 0.85, and 15 % requires every home at the 60 % cap
+  (Jain_kWh 0.735, 25 % comfort violations). Jain_kWh, Gini, group gap and vulnerable ratio
+  stay in every table. Evidence: `results/tables/fairness_feasibility.csv`.
+- `configs/reward/fairness.yaml` fairness weight 2.0; `make phase2-m4 pareto` targets.
+### Validated (3 populations x 120k steps, 20 held-out days; own-population numbers after the
+### protocol clarification of 0.5.0 - the population-42 numbers first reported on 2026-10-20
+### were 15.6-15.7 % peak / Jain_kWh 0.648-0.694)
+- Weighted-sum sweep lambda in {0 .. 8}: peak reduction flat at 14.7 % (every lambda; population 0
+  gives 13 % for every learner), Jain_kWh 0.589 -> 0.652, Jain_frac 0.949 -> 0.980, violation
+  rate 0.23 -> 0.29, income-group gap 9.4 -> 7.3, vulnerable/other burden 0.15 -> 0.18
+  (kWh-equality asks the vulnerable for more). Rule-based DR on the same populations: 11.2 %.
+- MOPPO: one model reproduces the six-model front (hypervolume 6.97 vs 7.09) but is
+  insensitive to its preference input (recorded limitation).
+- Gap/fraction form: best peak reduction (14.8 %) and lowest violation rate (0.22).
+- Month-4 gate on the amended basis: Jain met at every lambda; peak >= 15 % met on populations
+  1-2 only (the population-0 shortfall is a Phase-1 baseline property); lambda = 2 carried to
+  Month 5 as shaping.
+
 ## [0.3.2] - 2026-09-07
 ### Changed
 - Phase-1 dashboard regenerated around the supervisor's narrative: section nav; (1) grid &

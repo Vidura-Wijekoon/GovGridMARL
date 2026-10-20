@@ -70,10 +70,18 @@ KPIS = [
 ]
 
 
+POPULATIONS = (0, 1, 2)  # training seeds = synthetic household populations
+_ENV_CACHE: dict = {}
+
+
 def make_env(seed: int = 42, **kw):
+    """Environment on the household population generated with ``seed`` (= training seed)."""
     from govgrid_envs import GridMARLEnv
 
-    return GridMARLEnv(n_households=14, seed=seed, **kw)
+    key = (seed, tuple(sorted(kw.items())))
+    if key not in _ENV_CACHE:
+        _ENV_CACHE[key] = GridMARLEnv(n_households=14, seed=seed, **kw)
+    return _ENV_CACHE[key]
 
 
 def rollout(env, agent, seed: int, lam: float | None = None):
@@ -146,7 +154,6 @@ def main() -> int:
         }
     )
 
-    env = make_env()
     days = [10_000 + k for k in range(args.n_days)]
 
     # ---- collect checkpoints ---------------------------------------------------
@@ -170,6 +177,7 @@ def main() -> int:
 
     rows, burdens = [], {}
     for method, lam, seed, agent, pref_lam in jobs:
+        env = make_env(seed)  # own population (protocol section 7)
         res = [rollout(env, agent, d, pref_lam) for d in days]
         row = {"method": method, "lambda": lam, "seed": seed}
         row.update({k: float(np.mean([r[k] for r in res])) for k in KPIS})
@@ -183,7 +191,7 @@ def main() -> int:
             f"| vuln {row['vulnerable_burden_ratio']:.2f}"
         )
     h = RuleBasedDR()
-    hres = [rollout(env, h, d) for d in days]
+    hres = [rollout(make_env(p), h, d) for p in POPULATIONS for d in days]
     hrow = {"method": "heuristic", "lambda": np.nan, "seed": 0}
     hrow.update({k: float(np.mean([r[k] for r in hres])) for k in KPIS})
     rows.append(hrow)

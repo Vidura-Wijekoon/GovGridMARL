@@ -30,15 +30,17 @@ grounded in the proposal Gantt. Source of truth: `GovGridMARL_Research_Path.html
 | 11 | Apr 2027 | Evaluation, DSR validation & write-up |
 | 12 | May 2027 | Finalise, submit & publish |
 
-## Status (updated 2026-09-06)
+## Status (updated 2026-10-20)
 
 | Month | Status | Evidence |
 |---|---|---|
-| 1 | complete (14/15; m1-t12 skipped by decision) | `docs/logs/month1_log.md`, CHANGELOG 0.1.x |
+| 1 | complete (15/15; m1-t12 closed in Month 4 by the Markdown thesis pipeline) | `docs/logs/month1_log.md`, CHANGELOG 0.1.x / 0.4.0 |
 | 2 | complete except m2-t15 (meeting to schedule) | CHANGELOG 0.2.0, `results/logs/validate_env_*.log` |
 | 3 | complete except m3-t9 five-seed laptop run and m3-t15 sign-off | CHANGELOG 0.3.0, `docs/reports/phase1_milestone_report.md` — **Phase-1 gate PASS** |
 | 3+ | supervisor additions done: power-flow/NR analysis + bus-selection evidence in dashboard, energy-share (generation mix) scenario + sweep | `scripts/grid_analysis.py`, `docs/design/grid_electrical_basis.md`, `results/tables/energy_share_summary.csv` |
-| 4 | next: fairness formulation on the measured constraint costs; energy-share-aware observation/reward | `configs/reward/fairness.yaml`, `agents/lagrangian.py` |
+| 4 | complete (15/15) - Jain gate amended to relative burden with feasibility evidence; Jain target met, peak target on 2/3 populations | CHANGELOG 0.4.0, `docs/logs/month4_log.md`, `docs/reports/fairness_tradeoff.md` |
+| 5 | complete (15/15) - **zero safety violations at no peak cost** (Lagrangian / PID, joint agent), N-1 + stress tests; peak target open on population 0 | CHANGELOG 0.5.0, `docs/logs/month5_log.md`, `docs/reports/safety_results.md` |
+| 6 | next: consolidation, IEEE-118 scale test, five-seed confirmation, sensitivity to the flexibility spread | — |
 
 Kick-start demo: double-click `Start_Show.bat` (Windows) or run `python scripts/showcase.py`.
 

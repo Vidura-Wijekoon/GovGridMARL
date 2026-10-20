@@ -1,9 +1,16 @@
+# Phase-2 Month-5 reward (m5-t2): the fairness operating point of Month 4 as
+# reward shaping, safety enforced by the Lagrangian on info["cost_vec"]
+# (weights.safety stays 0: no shaping of the safety costs - see the ablation).
 name: safety
 weights:
   peak: 1.0
   cost: 0.5
-  fairness: 0.5
   comfort: 0.1
-constraints:                # consumed by the Lagrangian agent (Phase 2)
-  voltage: {v_min: 0.95, v_max: 1.05}
-  no_blackout: true
+  fairness: 2.0
+  safety: 0.0
+constraints:                # documented bounds (the env config holds the live values)
+  voltage: {v_min: 0.95, v_max: 1.10}
+  loading: {max_loading: 1.0}
+  comfort: {low: 0.30, mid: 0.40, high: 0.50}
+  no_blackout: true         # power-flow divergence = voltage 1.0 + loading 2.0 cost
+  fairness: {jain_min: 0.85}

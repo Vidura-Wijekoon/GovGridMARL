@@ -55,20 +55,20 @@ See [`docs/roadmap.md`](docs/roadmap.md) for the full 12-month, 180-task plan.
 ```text
 GovGridMARL/
 ├── src/govgridmarl/        # core library (installable package)
-│   ├── agents/             # ppo_core + PPO / IPPO / MAPPO + heuristics        [impl]
-│   ├── fairness/           # Jain index + fairness reward terms        [impl]
-│   ├── safety/             # constraint costs + runtime guardrails
+│   ├── agents/             # ppo_core + PPO/IPPO/MAPPO, MOPPO, Lagrangian/PID-Lagrangian, heuristics [impl]
+│   ├── fairness/           # Jain (kWh / relative), Gini, group & vulnerability metrics  [impl]
+│   ├── safety/             # constraint costs (voltage/thermal/comfort/fairness), N-1 [impl]
 │   ├── privacy/            # FedAvg + DP-SGD + privacy accountant
 │   ├── explainability/     # SHAP / LIME attribution
 │   ├── governance/         # tamper-evident audit log, Annex IV map     [impl]
 │   ├── data/               # synthetic generator + REDD / UK-DALE loaders     [impl]
 │   ├── training/           # trainer: rollouts, GAE, PPO, eval, logging       [impl]
-│   ├── evaluation/         # metrics + eval protocol                    [impl]
+│   ├── evaluation/         # metrics, Pareto tools, Phase-2 gate targets       [impl]
 │   └── utils/              # seeding, logging                           [impl]
 ├── envs/govgrid_envs/      # GridMARLEnv (PettingZoo), IEEE-14 mapping + fast PF  [impl]
 ├── configs/                # Hydra config tree (env / agent / reward / ...)
-├── experiments/            # train.py, evaluate.py, sweeps/
-├── tests/                  # 34 tests: env dynamics, PettingZoo API, agents, GAE, fairness, audit
+├── experiments/            # train.py, evaluate.py, pareto.py (m4), evaluate_phase2.py (m5), sweeps/
+├── tests/                  # 55 tests: env, PettingZoo API, agents, GAE, fairness, safety, Lagrangian, audit
 ├── scripts/                # validate_env.py, showcase.py, run_baselines.*, smoke checks
 ├── docs/                   # roadmap, design/, data/, thesis/, reports/, status/ (demo page)
 ├── data/                   # raw / interim / processed  (git-ignored)

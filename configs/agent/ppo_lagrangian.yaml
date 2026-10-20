@@ -1,0 +1,27 @@
+name: ppo_lagrangian     # PPO-Lagrangian on the centralised controller (m5-t3 reference)
+_target_: govgridmarl.agents.make_agent
+lr: 3.0e-4
+gamma: 0.99
+gae_lambda: 0.95
+clip_eps: 0.2
+entropy_coef: 0.01
+value_coef: 0.5
+max_grad_norm: 0.5
+n_epochs: 10
+n_minibatches: 4
+hidden: [128, 128]
+share_params: true
+normalize_advantage: true
+value_clip: true
+constraints: [voltage, loading, comfort]
+limits: {}
+method: lagrangian
+multiplier_lr: 0.05
+kp: 0.5
+ki: 0.05
+kd: 0.1
+max_multiplier: 20.0
+multiplier_init: 0.0
+multiplier_ema: 0.0
+cost_value_coef: 0.5
+cost_signal: indicator                      # indicator (violating hours) | magnitude (m5-t5 tuning)
