@@ -1,6 +1,11 @@
+# Phase-2 fairness-augmented reward (m4-t3). The fairness term is the per-step
+# penalty F/T selected by env.fairness_form / env.fairness_basis (see
+# GridMARLEnv docstring). weights.fairness is the sweep variable of m4-t5
+# (grid 0, 0.5, 1, 2, 4, 8); 2.0 is the default operating point found in m4-t11.
 name: fairness
 weights:
   peak: 1.0
   cost: 0.5
-  fairness: 0.5     # Jain-index term (Phase 2 target: Jain >= 0.85)
   comfort: 0.1
+  fairness: 2.0
+  safety: 0.0

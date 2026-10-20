@@ -55,27 +55,28 @@ See [`docs/roadmap.md`](docs/roadmap.md) for the full 12-month, 180-task plan.
 ```text
 GovGridMARL/
 ├── src/govgridmarl/        # core library (installable package)
-│   ├── agents/             # PPO, IPPO, MAPPO, MOPPO, Lagrangian-constrained
+│   ├── agents/             # ppo_core + PPO / IPPO / MAPPO + heuristics        [impl]
 │   ├── fairness/           # Jain index + fairness reward terms        [impl]
 │   ├── safety/             # constraint costs + runtime guardrails
 │   ├── privacy/            # FedAvg + DP-SGD + privacy accountant
 │   ├── explainability/     # SHAP / LIME attribution
 │   ├── governance/         # tamper-evident audit log, Annex IV map     [impl]
-│   ├── data/               # REDD / UK-DALE loaders + synthetic profiles
-│   ├── training/           # Hydra-driven training loop
+│   ├── data/               # synthetic generator + REDD / UK-DALE loaders     [impl]
+│   ├── training/           # trainer: rollouts, GAE, PPO, eval, logging       [impl]
 │   ├── evaluation/         # metrics + eval protocol                    [impl]
 │   └── utils/              # seeding, logging                           [impl]
-├── envs/govgrid_envs/      # PettingZoo grid env, IEEE-14, Grid2Op sandbox
+├── envs/govgrid_envs/      # GridMARLEnv (PettingZoo), IEEE-14 mapping + fast PF  [impl]
 ├── configs/                # Hydra config tree (env / agent / reward / ...)
 ├── experiments/            # train.py, evaluate.py, sweeps/
-├── tests/                  # pytest suite (passing on the implemented parts)
-├── scripts/                # setup_env.sh, solve_ieee14_powerflow.py
-├── docs/                   # architecture.md, roadmap.md
+├── tests/                  # 34 tests: env dynamics, PettingZoo API, agents, GAE, fairness, audit
+├── scripts/                # validate_env.py, showcase.py, run_baselines.*, smoke checks
+├── docs/                   # roadmap, design/, data/, thesis/, reports/, status/ (demo page)
 ├── data/                   # raw / interim / processed  (git-ignored)
 ├── results/                # run outputs                (git-ignored)
 ├── .github/workflows/      # CI (lint + tests)
 ├── environment.yml         # conda env (pinned in task m1-t2)
 ├── pyproject.toml          # packaging + tooling (ruff/black/pytest/mypy)
+├── Start_Show.bat          # one-click demo (Windows); scripts/showcase.py elsewhere
 ├── Makefile · CITATION.cff · CONTRIBUTING.md · CHANGELOG.md · LICENSE
 ```
 
@@ -110,24 +111,36 @@ torch from the matching [PyTorch index](https://pytorch.org/get-started/locally/
 
 ## Quickstart
 
+**Kick-start demo (Windows):** double-click **`Start_Show.bat`** in the repo root. It
+activates `.venv`, checks the stack, replays one evaluation day on the IEEE-14 grid with
+the no-control / rule-based / trained MAPPO policies, rebuilds the interactive status page
+(`docs/status/govgridmarl_status.html`) and opens it in your browser. Everywhere else:
+`python scripts/showcase.py` (add `--validate` to run the 14-check environment validation
+first, `--train` to also run a 2-minute MAPPO smoke training).
+
 ```bash
-# Run the test suite (works at the skeleton stage)
-pytest
-
-# Compose and inspect an experiment config (needs hydra-core)
-python experiments/train.py +experiment=baseline_ieee14
-
-# Once pandapower is installed: confirm IEEE-14 power flow converges (m1-t14)
-python scripts/solve_ieee14_powerflow.py
+pytest                                   # 34 tests (env, agents, fairness, governance)
+python scripts/validate_env.py           # m2-t14: 14 environment checks -> results/logs/
+python experiments/train.py +experiment=baseline_cloud agent=mappo seed=0   # 120k steps, ~6 min CPU
+python experiments/train.py -m +experiment=baseline_ieee14 agent=ppo,ippo,mappo seed=0,1,2,3,4  # full protocol
+python experiments/evaluate.py           # tables, figures, Phase-1 gate verdict
+make dashboard                           # MLflow UI at http://127.0.0.1:5000
 ```
 
 ```python
-from govgridmarl.fairness import jain_index
-from govgridmarl.evaluation import peak_reduction
-
-jain_index([5, 5, 5, 5])      # -> 1.0  (perfectly equal burden)
-peak_reduction(100.0, 85.0)   # -> 15.0 (% peak reduction)
+from govgrid_envs import GridMARLEnv
+env = GridMARLEnv(n_households=14, seed=42)          # PettingZoo ParallelEnv, AC power flow each step
+obs, _ = env.reset(seed=0)
+obs, rew, term, trunc, info = env.step({a: 2 for a in env.agents})   # everyone curtails 30 % of flexible load
+info["household_0"]["loading_max"], info["household_0"]["team_reward"]
 ```
+
+## Phase-1 status (6 Sep 2026)
+
+Phase-1 gate **PASS**: MAPPO reaches 15.5 ± 0.3 % peak reduction on 20 held-out days
+(rule-based DR 15.0 %), but Jain 0.66 and comfort violations in 29 % of hours — the
+efficiency-only gap that Phase 2 closes. See `docs/reports/phase1_milestone_report.md`,
+`results/figures/`, and the interactive page `docs/status/govgridmarl_status.html` (power-flow analysis, bus-selection evidence, energy-share scenarios). Electrical basis: `docs/design/grid_electrical_basis.md`.
 
 ## Tech stack
 
@@ -162,3 +175,24 @@ Released under the [MIT License](LICENSE). © 2026 Vidura.
 
 MSc thesis project (Jun 2026 – May 2027), conducted under academic supervision.
 Built on the open-source RL, power-systems, and AI-governance ecosystems.
+
+## Experiment tracking (m1-t4)
+
+Runs are tracked with **MLflow** (local SQLite store, no cloud account) via
+`govgridmarl.utils.tracking.Tracker`, configured in `configs/config.yaml`
+(`tracking:` block). Hydra composes the config; every run's parameters and
+metrics land in `mlflow.db` at the repo root.
+
+```bash
+# log any run (training entrypoint or smoke job)
+python experiments/train.py                          # single run
+python experiments/train.py -m agent=ippo,mappo seed=0,1,2   # Hydra sweep
+python scripts/smoke_train.py --track                # GPU smoke job
+
+# view the dashboard -> http://127.0.0.1:5000
+make dashboard        # = mlflow ui --backend-store-uri sqlite:///mlflow.db
+```
+
+Switch backends per-run without code changes:
+`python experiments/train.py tracking.backend=wandb` (needs `wandb login`)
+or `tracking.backend=none` to disable.

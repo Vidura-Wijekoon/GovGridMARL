@@ -1,6 +1,9 @@
+# Phase-1 efficiency-only reward (m2-t8). Fairness / safety weights are 0:
+# the constraint signals are still measured and logged (info[...]).
 name: efficiency
 weights:
   peak: 1.0
   cost: 0.5
-  fairness: 0.0
   comfort: 0.1
+  fairness: 0.0
+  safety: 0.0

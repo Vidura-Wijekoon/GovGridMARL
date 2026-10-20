@@ -1,0 +1,12 @@
+# @package _global_
+# Short CPU profile used for the cloud convergence-trend runs (m3-t5).
+defaults:
+  - override /env: ieee14
+  - override /agent: mappo
+  - override /reward: efficiency
+train:
+  total_timesteps: 120_000
+  n_envs: 8
+  n_steps: 96
+  eval_every: 10
+  eval_episodes: 5

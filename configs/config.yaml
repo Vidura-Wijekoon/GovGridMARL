@@ -11,9 +11,15 @@ defaults:
 seed: 42
 device: auto            # auto | cpu | cuda
 output_dir: results/${now:%Y-%m-%d}/${now:%H-%M-%S}
+run_root: results/runs   # <run_root>/<agent>/seed<k>/ holds metrics.csv, eval.csv, checkpoints/
+run_tag: null           # optional suffix for ablation runs
 
 # Experiment tracking (configured in task m1-t4)
 tracking:
-  backend: wandb        # wandb | mlflow | none
+  backend: mlflow       # mlflow | wandb | none
+  experiment: govgridmarl
+  run_name: null        # default: auto-generated
+  uri: null             # default: sqlite:///<repo>/mlflow.db  (view: make dashboard)
+  # wandb-only fields (used if backend: wandb)
   project: govgridmarl
   entity: null

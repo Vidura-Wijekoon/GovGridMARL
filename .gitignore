@@ -32,7 +32,7 @@ htmlcov/
 # ---- Experiment tracking & outputs ----
 wandb/
 mlruns/
-outputs/            # Hydra run dirs
+outputs/
 multirun/
 results/*
 !results/.gitkeep
@@ -72,3 +72,9 @@ Thumbs.db
 # ---- Secrets ----
 .env
 *.key
+mlflow.db
+mlflow.db-journal
+mlartifacts/
+
+# thesis build output (scripts/build_thesis.py)
+docs/thesis/build/

@@ -1,0 +1,6 @@
+name: heuristic     # rule-based DR benchmark (m3-t8); not trained
+_target_: govgridmarl.agents.heuristic.RuleBasedDR
+peak_price: 0.40
+mid_price: 0.26
+peak_load_frac: 0.85
+budget: 0.35

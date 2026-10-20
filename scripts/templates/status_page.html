@@ -1,0 +1,549 @@
+<title>GovGridMARL Phase-1 Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,500;1,400&display=swap">
+<style>
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --panel-2:#e9edf1; --line:#d3dae1; --ink:#131a22; --ink-2:#4a5866; --ink-3:#7b8894;
+  --accent:#e08a00; --accent-ink:#8a5200; --grid-blue:#1f5fa8; --good:#1f8a4c; --warn:#d38a00; --bad:#c9352b;
+  --low:#2a78d6; --mid:#eb6834; --high:#1baf7a; --bus:#243444; --shadow:0 1px 2px rgba(19,26,34,.06),0 8px 24px rgba(19,26,34,.06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1418; --panel:#161d24; --panel-2:#1f2932; --line:#2c3843; --ink:#e8edf2; --ink-2:#aab6c2; --ink-3:#7d8a97;
+  --accent:#f0a428; --accent-ink:#f5c86e; --grid-blue:#5f9de6; --good:#3fbf74; --warn:#f0b13a; --bad:#ef6a5e;
+  --low:#5a9ae6; --mid:#f08a5f; --high:#3fcf9a; --bus:#dbe4ee; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1418; --panel:#161d24; --panel-2:#1f2932; --line:#2c3843; --ink:#e8edf2; --ink-2:#aab6c2; --ink-3:#7d8a97;
+  --accent:#f0a428; --accent-ink:#f5c86e; --grid-blue:#5f9de6; --good:#3fbf74; --warn:#f0b13a; --bad:#ef6a5e;
+  --low:#5a9ae6; --mid:#f08a5f; --high:#3fcf9a; --bus:#dbe4ee; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;font-size:14px;line-height:1.45}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 22px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;font-size:28px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.sub{color:var(--ink-2);margin:4px 0 0;max-width:62ch}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.stamp{text-align:right;color:var(--ink-2);font-size:12px}
+.stamp b{display:block;color:var(--ink);font-weight:500}
+/* phase strip */
+.phases{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:18px 0 22px}
+.phase{padding:10px 12px;border-radius:6px;background:var(--panel-2);border:1px solid transparent;min-height:78px}
+.phase .eyebrow{display:flex;justify-content:space-between}
+.phase h3{margin:4px 0 2px;font-size:13px;font-weight:600}
+.phase p{margin:0;color:var(--ink-2);font-size:12px}
+.phase.done{border-color:var(--good)}
+.phase.now{background:var(--panel);border-color:var(--accent);box-shadow:var(--shadow)}
+.phase.now .eyebrow span:last-child{color:var(--accent-ink);font-weight:600}
+.bar{height:4px;border-radius:2px;background:var(--line);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--good)}
+.phase.now .bar i{background:var(--accent)}
+/* grid layout */
+.main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
+.panel .head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+.panel h2{margin:0;font-size:14px;font-weight:600}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink-2);padding:6px 10px;font:inherit;font-size:12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.play{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+.scrub{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+.scrub input{flex:1;accent-color:var(--accent)}
+.clock{font-size:20px;font-weight:500;min-width:64px}
+svg text{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 14px 12px;color:var(--ink-2);font-size:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.legend .ln{width:18px;height:3px;border-radius:2px}
+/* kpis */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:0 0 8px 8px;overflow:hidden}
+.kpi{background:var(--panel);padding:12px 14px}
+.kpi .v{font-size:24px;font-weight:500;line-height:1.1;margin-top:2px}
+.kpi .d{font-size:12px;color:var(--ink-2);margin-top:3px}
+.pill{display:inline-block;font-size:11px;padding:2px 7px;border-radius:999px;font-weight:600;letter-spacing:.02em}
+.pill.good{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--accent-ink)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.readout{padding:10px 14px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:13px;border-top:1px solid var(--line)}
+.readout dt{color:var(--ink-2)}.readout dd{margin:0;text-align:right}
+.hh{padding:8px 14px 14px;border-top:1px solid var(--line)}
+.hh .row{display:grid;grid-template-columns:22px 34px 1fr 52px 48px;gap:8px;align-items:center;font-size:12px;padding:3px 0}
+.hh .row.h{color:var(--ink-3);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.hh .lvl{display:flex;gap:2px}.hh .lvl i{width:7px;height:10px;background:var(--line);border-radius:1px}.hh .lvl i.on{background:var(--accent)}
+.hh .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+/* lower grid */
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.chart{padding:8px 10px 4px}
+.note{padding:10px 14px 14px;color:var(--ink-2);font-size:12.5px;border-top:1px solid var(--line)}
+.note b{color:var(--ink);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:500;color:var(--ink-3);font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:8px 14px;border-bottom:1px solid var(--line)}
+td{padding:7px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right}
+.pf{padding:10px 14px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:12.5px}
+.pf .blk h4{margin:0 0 4px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.pf table td,.pf table th{padding:3px 6px;font-size:11.5px}
+.pf .bal{display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+.pf .bal dt{color:var(--ink-2)}.pf .bal dd{margin:0;text-align:right}
+.bar-h{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--panel-2);margin:6px 0 2px}
+.bar-h i{display:block;height:100%}
+.es-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr);gap:8px 16px;padding:0 0 6px}
+.es-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;padding:8px 14px 0}
+.es-cols .readout{padding:6px 0;border-top:0;font-size:12.5px}
+.es-cols{align-content:start}
+#es-table td,#es-table th,#bench20 td,#bench20 th{padding:5px 8px;font-size:11.5px;white-space:nowrap}
+#es-table tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.dims{padding:10px 14px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 18px;font-size:12.5px}
+.dims h4{margin:0 0 6px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.dims p{margin:0 0 6px;color:var(--ink-2)}
+.dims .mono{color:var(--ink)}
+@media (max-width:900px){.pf,.es-grid,.dims{grid-template-columns:1fr}}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 9px;border-radius:5px;font-size:12px;max-width:260px;opacity:0;transition:opacity .12s;z-index:10}
+.tip.show{opacity:1}
+@media (max-width:900px){.main,.lower{grid-template-columns:1fr}.phases{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+/* sections */
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+.toc a{text-decoration:none;color:var(--ink-2);font-size:12.5px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+.toc a b{color:var(--accent-ink);font-weight:600;margin-right:4px}
+.toc a:hover{border-color:var(--accent);color:var(--ink)}
+h2.sec{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;font-size:20px;margin:34px 0 12px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
+h2.sec span{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:600}
+h2.sec small{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;color:var(--ink-2);font-weight:400}
+.hint{text-transform:none;letter-spacing:0;color:var(--ink-3);font-weight:400}
+.dims.dims-col{grid-template-columns:1fr;gap:8px}
+.gate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-radius:8px 8px 0 0;overflow:hidden}
+.gate-grid .g{background:var(--panel);padding:12px 14px}
+.gate-grid .g .v{font-size:15px;font-weight:600;margin-top:3px}
+.gate-grid .g .d{font-size:12px;color:var(--ink-2);margin-top:3px}
+.lower.first{margin-top:0}
+@media (max-width:900px){.gate-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">MSc thesis · Constrained MARL for residential demand response · IEEE-14 · Phase 1</div>
+    <h1>GovGridMARL <em>Phase-1 dashboard</em></h1>
+    <p class="sub">The IEEE 14-bus system solved with an AC Newton–Raphson power flow every hour, 14 household clusters (28,000 homes) as agents, and the generation mix (solar / wind "energy share") as an explicit scenario. One evaluation day replayed from the current repository state under three policies.</p>
+  </div>
+  <div class="stamp mono">snapshot<b>__DATE__ · __CKPT__ · __BACKEND__ AC power flow</b></div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#s1"><b>1</b> Grid &amp; power flow</a>
+  <a href="#s2"><b>2</b> Bus selection &amp; dimensions</a>
+  <a href="#s3"><b>3</b> Energy share</a>
+  <a href="#s4"><b>4</b> Demand-response results</a>
+  <a href="#s5"><b>5</b> Gate &amp; next</a>
+</nav>
+
+<section class="phases" aria-label="Roadmap phases">
+  <div class="phase done"><div class="eyebrow"><span>P1 · Jun–Aug</span><span>Month 1</span></div><h3>Setup &amp; literature</h3><p>105-paper review database; 14/15 tasks done</p><div class="bar"><i style="width:100%"></i></div></div>
+  <div class="phase done"><div class="eyebrow"><span>P1 · Jul</span><span>Month 2</span></div><h3>Environment modelling</h3><p>CMOMG, agents, reward, data, PettingZoo env, validation</p><div class="bar"><i style="width:100%"></i></div></div>
+  <div class="phase done now"><div class="eyebrow"><span>P1 · Aug</span><span>Month 3 · gate</span></div><h3>Baseline MARL on IEEE-14</h3><p>PPO / IPPO / MAPPO trained; gate <span id="gate-phase">–</span>; power-flow &amp; energy-share analysis added</p><div class="bar"><i style="width:100%"></i></div></div>
+  <div class="phase"><div class="eyebrow"><span>P2 · Sep–Nov</span><span>Months 4–6</span></div><h3>Fairness &amp; safety</h3><p>Jain ≥ 0.85, ≥ 15 % peak cut, zero violations, energy-share-aware policy</p><div class="bar"><i style="width:0%"></i></div></div>
+  <div class="phase"><div class="eyebrow"><span>P3–P5 · Dec–May</span><span>Months 7–12</span></div><h3>Privacy, XAI, audit, submission</h3><p>FL + DP, SHAP, governance layer, Annex IV, thesis</p><div class="bar"><i style="width:0%"></i></div></div>
+</section>
+
+<!-- ============ 1. GRID & POWER FLOW ============ -->
+<h2 class="sec" id="s1"><span>1</span>Grid &amp; power flow <small>load-flow and load-balance analysis, Newton–Raphson, every hour of the day</small></h2>
+<div class="main">
+  <div class="panel">
+    <div class="head">
+      <h2>IEEE-14 one-line diagram · household clusters</h2>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Policy">
+          <button data-pol="none" aria-pressed="false">No control</button>
+          <button data-pol="heuristic" aria-pressed="false">Rule-based DR</button>
+          <button data-pol="mappo" aria-pressed="true">MAPPO (learned)</button>
+        </div>
+        <button class="play" id="play">▶ Play day</button>
+      </div>
+    </div>
+    <svg id="grid" viewBox="0 0 900 560" width="100%" role="img" aria-label="IEEE-14 network with household clusters"></svg>
+    <div class="legend">
+      <span><i style="background:var(--low)"></i>low-income cluster</span><span><i style="background:var(--mid)"></i>mid</span><span><i style="background:var(--high)"></i>high</span>
+      <span><i class="ln" style="background:var(--good)"></i>branch &lt; 70 % rating</span><span><i class="ln" style="background:var(--warn)"></i>70–100 %</span><span><i class="ln" style="background:var(--bad)"></i>overload</span>
+      <span>solid = line · dashed = transformer · G = generator bus · labels = |V| pu</span>
+    </div>
+    <div class="scrub">
+      <span class="clock mono" id="clock">18:00</span>
+      <input type="range" id="hour" min="0" max="23" value="18" aria-label="Hour of day">
+      <span class="mono" id="price" style="color:var(--ink-2);font-size:12px"></span>
+    </div>
+    <div class="note"><b>How to read it:</b> the policy toggle and hour slider drive every panel on this page. Branch colour is loading against the rating (1.5 × nominal-case flow); the number beside each bus is the solved voltage magnitude. Household clusters hang below their bus; the ring shows the curtailment level chosen that hour.</div>
+  </div>
+
+  <div class="panel">
+    <div class="head"><h2>Power-flow analysis · <span id="pf-hour">18:00</span></h2><span class="eyebrow">Newton–Raphson · AC · S_base 100 MVA</span></div>
+    <div class="pf" id="pf"></div>
+    <div class="note"><b>How Newton–Raphson is used:</b> each hour the agents' curtailment decisions set the P and Q at the 11 load buses; the environment then solves the nodal equations P_i(V,θ) = P_i^spec, Q_i(V,θ) = Q_i^spec for the 13 unknown angles and 11 unknown |V| by iterating the Jacobian until the largest mismatch is below 1e-8 MVA (2–3 iterations from a warm start). The result gives the load balance shown above — generation = load + I²R losses, with the slack bus B1 absorbing the difference — plus the branch loadings and bus voltages that feed the constraint costs.</div>
+  </div>
+</div>
+
+<!-- ============ 2. BUS SELECTION & DIMENSIONS ============ -->
+<h2 class="sec" id="s2"><span>2</span>Bus selection &amp; dimensions <small>the electrical argument for where the households sit, with the numbers</small></h2>
+<div class="lower">
+  <div class="panel">
+    <div class="head"><h2>Why the clusters sit on these buses</h2><span class="eyebrow">+5 MW sensitivity test at every load bus</span></div>
+    <table id="sens"></table>
+    <div class="note"><b>Electrical argument:</b> 5 MW is added at one load bus at a time and the power flow re-solved. The six LV buses behind the transformers (B9–B14) show 5–10× the local voltage sensitivity and 5–15× the branch-loading sensitivity of the 135 kV buses — every MW drawn there flows through T4-7 / T4-9 / T5-6 and the radial 9-10-11 and 9-14-13 loops. Generator buses hold their voltage by construction. Residential flexibility placed at B9–B14 first therefore has the largest effect on the constraints Phase 2 enforces; the remaining clusters fill B4, B3, B1, B2, B5 in order. Details: <span class="mono">docs/design/grid_electrical_basis.md</span>.</div>
+  </div>
+  <div class="panel">
+    <div class="head"><h2>Dimensions and calculations</h2><span class="eyebrow">for the electrical and the software engineer</span></div>
+    <div class="dims dims-col" id="dims"></div>
+  </div>
+</div>
+
+<!-- ============ 3. ENERGY SHARE ============ -->
+<h2 class="sec" id="s3"><span>3</span>Energy share <small>solar / wind generation mix — the grid as a whole vs the energy-share view, share swept 0–80 % and wind fraction 20–90 %</small></h2>
+<div class="lower" style="grid-template-columns:1fr">
+  <div class="panel">
+    <div class="head">
+      <h2>Generation-mix scenario</h2>
+      <div class="controls"><span class="eyebrow">share sweep (wind 50 %)</span><div class="seg" role="group" aria-label="Renewable share scenario" id="es-seg"></div><span class="eyebrow" style="margin-left:8px">wind fraction at 80 %</span><div class="seg" role="group" aria-label="Wind fraction scenario" id="es-seg2"></div></div>
+    </div>
+    <div class="es-grid">
+      <div>
+        <div class="chart"><svg id="mix" viewBox="0 0 640 250" width="100%" role="img" aria-label="Generation mix over the day"></svg></div>
+        <div class="legend"><span><i style="background:var(--ink-3)"></i>conventional (slack B1 + gens)</span><span><i style="background:var(--grid-blue)"></i>wind farm (B2)</span><span><i style="background:var(--accent)"></i>rooftop PV (11 load buses)</span><span><i class="ln" style="background:var(--bad)"></i>surplus exported</span><span><i class="ln" style="background:var(--ink)"></i>system load + losses</span></div>
+      </div>
+      <div>
+        <div class="es-cols">
+          <div><div class="eyebrow">Grid as a whole <span class="hint">(residential DR view)</span></div><dl class="readout mono" id="es-whole"></dl></div>
+          <div><div class="eyebrow">Energy-share view <span class="hint">(generation mix)</span></div><dl class="readout mono" id="es-share"></dl></div>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;border-top:1px solid var(--line)"><table id="es-table"></table></div>
+    <div class="note"><b>Two views of the same day.</b> <i>Grid as a whole</i> is the Phase-1 demand-response objective: residential peak, fairness of the burden, constraint violations. <i>Energy-share view</i> asks what the renewables did: how much of consumption they covered, how much surplus had to be exported, the peak net import from the slack, and the worst branch loading. The scenario buttons switch the generation mix; the policy toggle in section 1 switches the controller.</div>
+  </div>
+</div>
+
+<div class="lower" style="grid-template-columns:1fr">
+  <div class="panel">
+    <div class="head"><h2>Sweep · whole-grid KPIs vs energy-share KPIs across scenarios</h2><span class="eyebrow" id="sweep-meta"></span></div>
+    <div class="chart"><svg id="sweep" viewBox="0 0 1180 260" width="100%" role="img" aria-label="Energy-share sweep"></svg></div>
+    <div class="legend"><span><i style="background:var(--ink-3)"></i>peak reduction % (grid as a whole)</span><span><i style="background:var(--good)"></i>renewables consumed % of consumption</span><span><i style="background:var(--grid-blue)"></i>max branch loading %</span><span><i class="ln" style="background:var(--bad)"></i>100 % = rating</span><span>◆ surplus exported, MWh (right axis)</span></div>
+    <div class="note"><b>What changes with the mix:</b> up to ≈ 40 % renewable share every MWh is consumed locally and losses fall (generation moves closer to load). Beyond that the <i>shape</i> matters more than the share: a PV-heavy 80 % mix exports a large midday surplus, reverses flows on the LV loops and overloads a branch, while a wind-heavy 80 % mix (70–90 % wind) is absorbed almost entirely because the wind farm at B2 sits on the 135 kV backbone next to the slack. The whole-grid bars are flat: the Phase-1 policies see the PV curve but not the wind injection or the net load, and their reward targets the residential evening peak, so peak reduction and Jain do not move with the mix and the midday surplus is left untouched. That is the measured baseline the energy-share-aware controller of Phase 2 must beat — with high PV the useful action is to shift load <i>into</i> midday, and fairness becomes "who gets the cheap midday energy".</div>
+  </div>
+</div>
+
+<!-- ============ 4. DEMAND-RESPONSE RESULTS ============ -->
+<h2 class="sec" id="s4"><span>4</span>Demand-response results <small>Phase-1 efficiency-only baselines on the evaluation day and over 20 held-out days</small></h2>
+<div class="lower">
+  <div class="panel">
+    <div class="head"><h2>Episode KPIs · <span id="polname">MAPPO</span></h2><span id="gate" class="pill warn">gate pending</span></div>
+    <div class="kpis">
+      <div class="kpi"><div class="eyebrow">Peak reduction</div><div class="v mono" id="k-peak">–</div><div class="d">target ≥ 15 % vs rule-based</div></div>
+      <div class="kpi"><div class="eyebrow">Jain index</div><div class="v mono" id="k-jain">–</div><div class="d">Phase-2 target ≥ 0.85</div></div>
+      <div class="kpi"><div class="eyebrow">Violation rate</div><div class="v mono" id="k-viol">–</div><div class="d">steps with any constraint cost</div></div>
+      <div class="kpi"><div class="eyebrow">Daily cost</div><div class="v mono" id="k-cost">–</div><div class="d">28,000 homes · ToU tariff</div></div>
+    </div>
+    <dl class="readout mono" id="readout"></dl>
+  </div>
+  <div class="panel">
+    <div class="head"><h2>Households at <span id="hh-hour">18:00</span></h2><span class="eyebrow">served kW/home · level</span></div>
+    <div class="hh" id="hh"></div>
+  </div>
+</div>
+
+<div class="lower">
+  <div class="panel">
+    <div class="head"><h2>Residential aggregate load · evaluation day</h2><span class="eyebrow">MW · 28,000 homes</span></div>
+    <div class="chart"><svg id="profile" viewBox="0 0 560 230" width="100%" role="img" aria-label="Load profile"></svg></div>
+    <div class="note"><b>What the learned policy does:</b> it lets the morning pass, then curtails through the 17–20 h tariff peak and accepts the rebound afterwards. Peak reduction is measured on this residential aggregate against the same day without control.</div>
+  </div>
+  <div class="panel">
+    <div class="head"><h2>Training curves · cloud trend runs</h2><span class="eyebrow" id="curve-meta"></span></div>
+    <div class="chart"><svg id="curves" viewBox="0 0 560 230" width="100%" role="img" aria-label="Training curves"></svg></div>
+    <div class="note"><b>Reading it:</b> learning reward per agent (difference-reward form, do-nothing = 0) against environment steps, one line per seed. All three learners plateau around 1.3 after ~50k steps; the five-seed 500k-step runs are queued for the laptop.</div>
+  </div>
+</div>
+
+<div class="lower">
+  <div class="panel">
+    <div class="head"><h2>Benchmark on this day</h2><span class="eyebrow">deterministic policies · seed 10000</span></div>
+    <table id="bench"></table>
+    <div class="note">Jain is 1.0 without control by construction (nobody is curtailed). The efficiency-only baselines beat the rule on peak but concentrate the burden on high-flexibility homes — the gap Phase 2 is built to close.</div>
+  </div>
+  <div class="panel">
+    <div class="head"><h2>Protocol benchmark · 20 held-out days</h2><span class="eyebrow">mean ± 95 % CI over training seeds</span></div>
+    <table id="bench20"></table>
+    <div class="note" id="bench20-note">From <span class="mono">experiments/evaluate.py</span> (seeds 10000–10019, deterministic policies, Welch / Cliff's δ in <span class="mono">results/tables/significance.csv</span>).</div>
+  </div>
+</div>
+
+<!-- ============ 5. GATE & NEXT ============ -->
+<h2 class="sec" id="s5"><span>5</span>Phase-1 gate &amp; what comes next</h2>
+<div class="lower" style="grid-template-columns:1fr">
+  <div class="panel">
+    <div class="gate-grid" id="gategrid"></div>
+    <div class="note"><b>Publication plan (supervisor, Sep 2026):</b> (1) the literature review as a pure review paper with no reference to this project → IEEE Transactions on Smart Grid; (2) the Phase-1 environment, power-flow basis and baselines → conference paper; (3) the complete governance framework → journal paper. Reproduce this page with <span class="mono">python scripts/showcase.py</span> or <span class="mono">Start_Show.bat</span>.</div>
+  </div>
+</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const GROUPC = {low:'var(--low)', mid:'var(--mid)', high:'var(--high)'};
+// bus positions (0-based pandapower index = IEEE bus n-1)
+const POS = {0:[110,470],1:[300,505],2:[600,505],3:[500,375],4:[240,365],5:[240,225],6:[620,300],7:[770,300],8:[600,200],9:[500,140],10:[380,165],11:[110,110],12:[290,80],13:[590,70]};
+const NAME = i => 'B'+(i+1);
+let pol='mappo', hour=18, timer=null;
+const svg=document.getElementById('grid'), NS='http://www.w3.org/2000/svg';
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const tip=document.getElementById('tip');
+function showTip(ev,html){tip.innerHTML=html;tip.classList.add('show');tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+12)+'px';}
+function hideTip(){tip.classList.remove('show');}
+
+// ---- static grid -----------------------------------------------------------
+const branches=[]; // {el, kind, idx}
+D.grid.lines.forEach((l,i)=>{const [x1,y1]=POS[l.from],[x2,y2]=POS[l.to];const e=el('line',{x1,y1,x2,y2,'stroke-width':3,'stroke-linecap':'round',stroke:'var(--good)'},svg);branches.push({e,kind:'line',i,from:l.from,to:l.to});});
+D.grid.trafos.forEach((l,i)=>{const [x1,y1]=POS[l.from],[x2,y2]=POS[l.to];const e=el('line',{x1,y1,x2,y2,'stroke-width':3,'stroke-dasharray':'7 5','stroke-linecap':'round',stroke:'var(--good)'},svg);branches.push({e,kind:'trafo',i,from:l.from,to:l.to});});
+branches.forEach(b=>{b.e.style.cursor='crosshair';b.e.addEventListener('mousemove',ev=>{const s=step();const v=b.kind==='line'?s.line_loading[b.i]:s.trafo_loading[b.i];showTip(ev,`<b>${b.kind==='line'?'Line':'Transformer'} ${NAME(b.from)}–${NAME(b.to)}</b><br>${(v*100).toFixed(0)} % of rating (rating = 1.5 × nominal flow)`);});b.e.addEventListener('mouseleave',hideTip);});
+// buses
+const busText={};
+Object.keys(POS).forEach(k=>{const i=+k,[x,y]=POS[i];const isGen=D.grid.gens.includes(i);
+  el('rect',{x:x-16,y:y-4,width:32,height:8,rx:2,fill:'var(--bus)'},svg);
+  if(isGen){el('circle',{cx:x,cy:y-16,r:7,fill:'var(--panel)',stroke:'var(--bus)','stroke-width':1.5},svg);el('text',{x,y:y-13,'text-anchor':'middle','font-size':8,fill:'var(--bus)'},svg).textContent='G';}
+  el('text',{x:x-19,y:y+3,'text-anchor':'end','font-size':11,fill:'var(--ink)'},svg).textContent=NAME(i);
+  busText[i]=el('text',{x:x+19,y:y+3,'font-size':9.5,fill:'var(--ink-3)'},svg);
+  const bg=D.grid.bg_loads.find(b=>b.bus===i); if(bg){const t=el('text',{x:x+19,y:y-8,'font-size':9,fill:'var(--ink-3)'},svg);t.textContent=`bg ${bg.p_mw} MW`;}
+});
+// households: place around bus, below
+const hhEls=[];
+const byBus={}; D.households.forEach(h=>{(byBus[h.bus]=byBus[h.bus]||[]).push(h);});
+Object.entries(byBus).forEach(([b,list])=>{const [x,y]=POS[+b];list.forEach((h,j)=>{const n=list.length;const dx=(j-(n-1)/2)*30;const cx=x+dx,cy=y+40;
+  const g=el('g',{},svg);const ring=el('circle',{cx,cy,r:14,fill:'none',stroke:'var(--accent)','stroke-width':2.5,opacity:0},g);
+  const c=el('circle',{cx,cy,r:8,fill:GROUPC[h.group],stroke:'var(--panel)','stroke-width':1.5},g);
+  const lab=el('text',{x:cx,y:cy+24,'text-anchor':'middle','font-size':8.5,fill:'var(--ink-3)'},g);lab.textContent='H'+h.id;
+  const hit=el('circle',{cx,cy,r:16,fill:'transparent'},g);hit.style.cursor='pointer';
+  hit.addEventListener('mousemove',ev=>{const s=step();showTip(ev,`<b>Household cluster H${h.id}</b> · ${h.group}-income · bus ${NAME(h.bus)}<br>2,000 homes · ${h.daily_kwh} kWh/home/day · comfort tol. ${Math.round(h.comfort_tol*100)} %<br>now: ${s.served_kw[h.id].toFixed(2)} kW/home (base ${s.base_kw[h.id].toFixed(2)}) · level ${s.actions[h.id]}<br>burden so far ${s.burden[h.id].toFixed(2)} kWh/home`);});
+  hit.addEventListener('mouseleave',hideTip);
+  hhEls.push({h,c,ring});});});
+const title=el('text',{x:16,y:24,'font-size':11,fill:'var(--ink-3)'},svg);
+const stat=el('text',{x:884,y:24,'font-size':11,'text-anchor':'end',fill:'var(--ink-2)'},svg);
+
+// ---- dynamic ---------------------------------------------------------------
+const step=()=>D.runs[pol].steps[hour];
+const loadColor=v=>v>=1?'var(--bad)':v>=0.7?'var(--warn)':'var(--good)';
+function render(){
+  const s=step(), ep=D.runs[pol].episode;
+  branches.forEach(b=>{const v=b.kind==='line'?s.line_loading[b.i]:s.trafo_loading[b.i];b.e.setAttribute('stroke',loadColor(v));b.e.setAttribute('stroke-width',(2+4*Math.min(v,1.3)).toFixed(1));});
+  Object.keys(busText).forEach(i=>{busText[i].textContent=s.vm[i].toFixed(3)+' pu';});
+  hhEls.forEach(({h,c,ring})=>{const kw=s.served_kw[h.id];c.setAttribute('r',(4+kw*6).toFixed(1));const lvl=s.actions[h.id];ring.setAttribute('opacity',lvl?0.35+0.16*lvl:0);ring.setAttribute('r',(8+kw*6+2*lvl).toFixed(1));});
+  const maxL=Math.max(...s.line_loading,...s.trafo_loading);
+  title.textContent=`${String(hour).padStart(2,'0')}:00 · residential ${s.p_res_mw.toFixed(2)} MW (no-control ${s.p_base_mw.toFixed(2)}) · max branch ${(maxL*100).toFixed(0)} %`;
+  stat.textContent=s.violation?'⚠ constraint cost > 0 this hour':'all constraints satisfied';
+  stat.setAttribute('fill',s.violation?'var(--bad)':'var(--good)');
+  document.getElementById('clock').textContent=String(hour).padStart(2,'0')+':00';
+  document.getElementById('hh-hour').textContent=String(hour).padStart(2,'0')+':00';
+  document.getElementById('price').textContent=`tariff ${s.price.toFixed(2)}/kWh · PV ${D.pv[hour].toFixed(2)} kW/home`;
+  document.getElementById('hour').value=hour;
+  document.getElementById('polname').textContent={none:'no control',heuristic:'rule-based DR',mappo:'MAPPO'}[pol];
+  document.getElementById('k-peak').textContent=ep.peak_reduction_pct.toFixed(1)+' %';
+  document.getElementById('k-jain').textContent=ep.jain_index.toFixed(3);
+  document.getElementById('k-viol').textContent=(ep.violation_rate*100).toFixed(0)+' %';
+  document.getElementById('k-cost').textContent=Math.round(ep.cost_total).toLocaleString();
+  const shed=ep.energy_base_mwh-ep.energy_res_mwh;
+  document.getElementById('readout').innerHTML=`<dt>peak (res.)</dt><dd>${ep.res_peak_mw.toFixed(2)} / ${ep.base_peak_mw.toFixed(2)} MW</dd><dt>energy shed</dt><dd>${shed.toFixed(1)} MWh (${(shed/ep.energy_base_mwh*100).toFixed(1)} %)</dd><dt>burden low / mid / high</dt><dd>${ep.burden_by_group_kwh.low.toFixed(2)} / ${ep.burden_by_group_kwh.mid.toFixed(2)} / ${ep.burden_by_group_kwh.high.toFixed(2)} kWh</dd><dt>team return (day)</dt><dd>${D.runs[pol].steps.reduce((a,x)=>a+x.team_reward,0).toFixed(3)}</dd>`;
+  const hh=document.getElementById('hh');
+  hh.innerHTML='<div class="row h"><span></span><span>bus</span><span>served / base kW</span><span>level</span><span>burden</span></div>'+D.households.map(h=>{const kw=s.served_kw[h.id],b=s.base_kw[h.id],l=s.actions[h.id];return `<div class="row"><span class="dot" style="background:${GROUPC[h.group]}" title="${h.group}"></span><span class="mono">${NAME(h.bus)}</span><span class="mono">${kw.toFixed(2)} <span style="color:var(--ink-3)">/ ${b.toFixed(2)}</span></span><span class="lvl" aria-label="level ${l}">${[1,2,3,4].map(k=>`<i class="${k<=l?'on':''}"></i>`).join('')}</span><span class="mono" style="color:var(--ink-2)">${s.burden[h.id].toFixed(2)}</span></div>`;}).join('');
+  drawProfile();
+  renderPF();
+  renderEnergy();
+}
+document.querySelectorAll('[data-pol]').forEach(b=>b.addEventListener('click',()=>{pol=b.dataset.pol;document.querySelectorAll('[data-pol]').forEach(x=>x.setAttribute('aria-pressed',x===b));render();}));
+document.getElementById('hour').addEventListener('input',e=>{hour=+e.target.value;render();});
+document.getElementById('play').addEventListener('click',e=>{if(timer){clearInterval(timer);timer=null;e.target.textContent='▶ Play day';return;}hour=(hour+1)%24;render();e.target.textContent='❚❚ Pause';timer=setInterval(()=>{hour=(hour+1)%24;render();if(hour===23){clearInterval(timer);timer=null;e.target.textContent='▶ Play day';}},550);});
+
+// ---- profile chart ---------------------------------------------------------
+const P=document.getElementById('profile');
+function drawProfile(){
+  P.innerHTML='';const W=560,H=230,L=44,R=12,T=14,B=30;const pw=W-L-R,ph=H-T-B;
+  const all=Object.values(D.runs).flatMap(r=>r.steps.map(s=>s.p_res_mw)).concat(D.runs.none.steps.map(s=>s.p_base_mw));
+  const ymax=Math.ceil(Math.max(...all)/5)*5;const x=i=>L+i/23*pw, y=v=>T+ph-v/ymax*ph;
+  for(let v=0;v<=ymax;v+=5){el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--line)','stroke-width':.6},P);el('text',{x:L-6,y:y(v)+3,'text-anchor':'end','font-size':9,fill:'var(--ink-3)'},P).textContent=v;}
+  for(let h=0;h<=23;h+=3)el('text',{x:x(h),y:H-10,'text-anchor':'middle','font-size':9,fill:'var(--ink-3)'},P).textContent=String(h).padStart(2,'0');
+  // tariff peak band
+  el('rect',{x:x(16),y:T,width:x(20)-x(16),height:ph,fill:'var(--accent)',opacity:.08},P);
+  el('text',{x:x(18),y:T+10,'text-anchor':'middle','font-size':9,fill:'var(--accent-ink)'},P).textContent='peak tariff';
+  const path=arr=>arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ');
+  const cols={none:'var(--ink-3)',heuristic:'var(--accent)',mappo:'var(--grid-blue)'};
+  el('path',{d:path(D.runs.none.steps.map(s=>s.p_base_mw)),fill:'none',stroke:cols.none,'stroke-width':2,'stroke-dasharray':'4 3'},P);
+  ['heuristic','mappo'].forEach(k=>{el('path',{d:path(D.runs[k].steps.map(s=>s.p_res_mw)),fill:'none',stroke:cols[k],'stroke-width':k===pol?2.6:1.4,opacity:k===pol?1:.55},P);});
+  // labels at end
+  const lbl=(k,txt,v)=>{const t=el('text',{x:x(23)+4,y:y(v)+3,'font-size':9.5,fill:cols[k]},P);t.textContent=txt;};
+  const last=k=>D.runs[k].steps[23].p_res_mw;
+  el('text',{x:x(19)+4,y:y(D.runs.none.steps[19].p_base_mw)-6,'font-size':9.5,fill:cols.none},P).textContent='no control';
+  el('text',{x:x(21)+2,y:y(D.runs.mappo.steps[21].p_res_mw)+13,'font-size':9.5,fill:cols.mappo},P).textContent='MAPPO';
+  el('text',{x:x(17)-60,y:y(D.runs.heuristic.steps[17].p_res_mw)-4,'font-size':9.5,fill:cols.heuristic},P).textContent='rule-based';
+  // cursor
+  el('line',{x1:x(hour),x2:x(hour),y1:T,y2:T+ph,stroke:'var(--ink)','stroke-width':1,'stroke-dasharray':'2 2'},P);
+  const s=step();el('circle',{cx:x(hour),cy:y(s.p_res_mw),r:4,fill:cols[pol]||'var(--ink)',stroke:'var(--panel)','stroke-width':1.5},P);
+  el('text',{x:L-34,y:T+2,'font-size':9,fill:'var(--ink-3)'},P).textContent='MW';
+}
+
+// ---- training curves -------------------------------------------------------
+(function(){
+  const C=document.getElementById('curves');const W=560,H=230,L=40,R=14,T=14,B=30;const pw=W-L-R,ph=H-T-B;
+  const cols={mappo:'var(--grid-blue)',ippo:'var(--mid)',ppo:'var(--high)'};
+  let xmax=0,ymin=0,ymax=0,n=0;
+  Object.values(D.curves).forEach(seeds=>Object.values(seeds).forEach(c=>{xmax=Math.max(xmax,...c.timesteps);ymax=Math.max(ymax,...c.return);ymin=Math.min(ymin,...c.return);n++;}));
+  ymax=Math.ceil(ymax*2)/2;ymin=Math.floor(ymin*2)/2;
+  const x=v=>L+v/xmax*pw,y=v=>T+ph-(v-ymin)/(ymax-ymin)*ph;
+  for(let v=ymin;v<=ymax+1e-9;v+=0.5){el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--line)','stroke-width':.6},C);el('text',{x:L-6,y:y(v)+3,'text-anchor':'end','font-size':9,fill:'var(--ink-3)'},C).textContent=v.toFixed(1);}
+  for(let v=0;v<=xmax;v+=20000)el('text',{x:x(v),y:H-10,'text-anchor':'middle','font-size':9,fill:'var(--ink-3)'},C).textContent=(v/1000)+'k';
+  el('text',{x:W-R,y:H-10,'text-anchor':'end','font-size':9,fill:'var(--ink-3)'},C).textContent='env steps';
+  const smooth=(a,k=5)=>a.map((_,i)=>{const s=a.slice(Math.max(0,i-k+1),i+1);return s.reduce((p,q)=>p+q,0)/s.length;});
+  const ends=[];
+  Object.entries(D.curves).forEach(([m,seeds])=>Object.entries(seeds).forEach(([sd,c])=>{const r=smooth(c.return);const d=r.map((v,i)=>(i?'L':'M')+x(c.timesteps[i]).toFixed(1)+','+y(v).toFixed(1)).join(' ');el('path',{d,fill:'none',stroke:cols[m],'stroke-width':1.8,opacity:.9},C);ends.push({m,x:x(c.timesteps[c.timesteps.length-1]),y:y(r[r.length-1]),done:c.timesteps[c.timesteps.length-1]>=xmax-800});}));
+  const seen={};let k=0;ends.forEach(e=>{if(seen[e.m])return;seen[e.m]=1;el('text',{x:L+8+k*52,y:T+10,'font-size':9.5,fill:cols[e.m]},C).textContent=e.m.toUpperCase();k++;});
+  document.getElementById('curve-meta').textContent=`${n} runs · ${Object.keys(D.curves).length} learners · 120k steps each`;
+})();
+
+// ---- benchmark table -------------------------------------------------------
+(function(){
+  const rows=[['none','No control'],['heuristic','Rule-based DR'],["mappo","MAPPO (trained)"]];
+  document.getElementById('bench').innerHTML='<tr><th>policy</th><th class="num">peak red.</th><th class="num">cost</th><th class="num">Jain</th><th class="num">viol.</th><th class="num">shed MWh</th></tr>'+rows.map(([k,n])=>{const e=D.runs[k].episode;return `<tr><td>${n}</td><td class="num mono">${e.peak_reduction_pct.toFixed(1)} %</td><td class="num mono">${Math.round(e.cost_total).toLocaleString()}</td><td class="num mono">${e.jain_index.toFixed(3)}</td><td class="num mono">${(e.violation_rate*100).toFixed(0)} %</td><td class="num mono">${(e.energy_base_mwh-e.energy_res_mwh).toFixed(1)}</td></tr>`;}).join('');
+})();
+
+
+// ---- power-flow analysis panel ----------------------------------------------
+const G=D.grid_analysis||null;
+const BUSINFO=G?Object.fromEntries(G.buses.map(b=>[b.bus,b])):{};
+function renderPF(){
+  const s=step(); const m=s.mix||{}; const el=document.getElementById('pf');
+  document.getElementById('pf-hour').textContent=String(hour).padStart(2,'0')+':00';
+  const conv=Math.max(0,m.conv_mw||0), pv=m.pv_mw||0, wind=m.wind_mw||0, load=m.load_mw||0, loss=m.losses_mw||0, tot=conv+pv+wind||1;
+  const br=[]; D.grid.lines.forEach((l,i)=>br.push({n:`L${i} ${NAME(l.from)}–${NAME(l.to)}`,v:s.line_loading[i]})); D.grid.trafos.forEach((l,i)=>br.push({n:`T${i} ${NAME(l.from)}–${NAME(l.to)}`,v:s.trafo_loading[i]}));
+  br.sort((a,b)=>b.v-a.v);
+  const it=s.nr_iter!=null&&s.nr_iter>0?s.nr_iter:(G?G.newton_raphson.iterations:3);
+  const busRows=D.grid.buses.map(b=>{const bi=BUSINFO[b.id]||{}; return `<tr><td class="mono">${NAME(b.id)}</td><td>${bi.type||''}</td><td class="num mono">${(bi.vn_kv||b.vn_kv).toFixed(1)}</td><td class="num mono">${s.vm[b.id].toFixed(4)}</td><td class="num mono">${bi.p_load_mw!=null?bi.p_load_mw.toFixed(1):''}</td></tr>`;}).join('');
+  el.innerHTML=`
+   <div class="blk"><h4>Newton–Raphson</h4>
+     <dl class="bal"><dt>iterations (warm start)</dt><dd>${it}</dd><dt>tolerance</dt><dd>1e-8 MVA</dd><dt>unknowns</dt><dd>13 θ + 11 |V|</dd><dt>solver</dt><dd>${D.meta.pf_backend==='lightsim'?'LightSim2Grid (C++)':'pandapower'}</dd></dl>
+     <h4 style="margin-top:10px">Active-power balance (MW)</h4>
+     <dl class="bal"><dt>conventional generation</dt><dd>${conv.toFixed(2)}</dd><dt>+ wind</dt><dd>${wind.toFixed(2)}</dd><dt>+ PV</dt><dd>${pv.toFixed(2)}</dd><dt>= load</dt><dd>${load.toFixed(2)}</dd><dt>+ losses (I²R)</dt><dd>${loss.toFixed(2)}</dd><dt>${(m.surplus_mw||0)>0?'+ export (surplus)':'slack B1 injection'}</dt><dd>${(m.surplus_mw||0)>0?m.surplus_mw.toFixed(2):(m.ext_grid_mw||0).toFixed(2)}</dd><dt>losses / generation</dt><dd>${(loss/tot*100).toFixed(2)} %</dd></dl>
+     <h4 style="margin-top:10px">Generation mix this hour</h4>
+     <div class="bar-h"><i style="width:${conv/tot*100}%;background:var(--ink-3)"></i><i style="width:${wind/tot*100}%;background:var(--grid-blue)"></i><i style="width:${pv/tot*100}%;background:var(--accent)"></i></div>
+     <div style="color:var(--ink-2);font-size:11.5px">conventional ${(conv/tot*100).toFixed(0)} % · wind ${(wind/tot*100).toFixed(0)} % · PV ${(pv/tot*100).toFixed(0)} %</div>
+     <h4 style="margin-top:10px">Most loaded branches</h4>
+     <table>${br.slice(0,4).map(b=>`<tr><td class="mono">${b.n}</td><td class="num mono" style="color:${b.v>=1?'var(--bad)':b.v>=0.7?'var(--accent-ink)':'var(--good)'}">${(b.v*100).toFixed(0)} %</td></tr>`).join('')}</table>
+   </div>
+   <div class="blk"><h4>Bus voltages (pu on S_base 100 MVA)</h4>
+     <table><tr><th>bus</th><th>type</th><th class="num">kV</th><th class="num">|V|</th><th class="num">P_load</th></tr>${busRows}</table>
+   </div>`;
+}
+// ---- bus-selection sensitivities ---------------------------------------------
+(function(){
+  if(!G) return;
+  const rows=G.sensitivities.slice().sort((a,b)=>a.priority_rank-b.priority_rank);
+  document.getElementById('sens').innerHTML='<tr><th>bus</th><th>side</th><th class="num">ΔV local (pu)</th><th class="num">Δ max loading</th><th class="num">Δ losses (MW)</th><th class="num">priority</th></tr>'+
+    rows.map(r=>`<tr><td class="mono">${r.name}</td><td style="white-space:nowrap">${r.behind_transformer?'LV (behind trafo)':(r.vn_kv>100?'135 kV':'gen bus')}</td><td class="num mono">${r.dV_local_pu_per_5MW>=0?'+':''}${r.dV_local_pu_per_5MW.toFixed(4)}</td><td class="num mono">+${r.dLoadingMax_per_5MW.toFixed(3)}</td><td class="num mono">+${r.dLosses_mw_per_5MW.toFixed(3)}</td><td class="num mono">${r.priority_rank}</td></tr>`).join('');
+})();
+// ---- energy-share panel --------------------------------------------------------
+let esKey=null;
+const ES=D.energy_share||{scenarios:[]};
+(function(){
+  const seg=document.getElementById('es-seg'), seg2=document.getElementById('es-seg2');
+  if(!ES.scenarios.length){document.getElementById('s3').hidden=true;return;}
+  const mk=(sc,parent,pressed)=>{const b=document.createElement('button');b.textContent=sc.label;b.dataset.es=sc.key;b.setAttribute('aria-pressed',pressed);b.addEventListener('click',()=>{esKey=sc.key;document.querySelectorAll('[data-es]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.es===esKey));renderEnergy();});parent.appendChild(b);};
+  ES.scenarios.forEach((sc,i)=>{if(sc.group!=='wind')mk(sc,seg,i===0);});
+  ES.scenarios.forEach(sc=>{if(sc.group==='wind')mk(sc,seg2,false);});
+  esKey=ES.scenarios[0].key;
+})();
+function renderEnergy(){
+  if(!esKey) return;
+  const sc=ES.scenarios.find(x=>x.key===esKey); const run=sc.runs[pol]||sc.runs.none; const ep=run.episode;
+  // whole-grid vs energy-share KPIs
+  document.getElementById('es-whole').innerHTML=`<dt>peak reduction</dt><dd>${ep.peak_reduction_pct.toFixed(1)} %</dd><dt>Jain</dt><dd>${ep.jain_index.toFixed(3)}</dd><dt>violation rate</dt><dd>${(ep.violation_rate*100).toFixed(0)} %</dd><dt>residential peak</dt><dd>${ep.res_peak_mw.toFixed(1)} MW</dd>`;
+  document.getElementById('es-share').innerHTML=`<dt>renewables consumed</dt><dd>${(ep.renewable_share_of_consumption*100).toFixed(0)} %</dd><dt>surplus exported</dt><dd>${ep.renewable_surplus_mwh.toFixed(0)} MWh</dd><dt>net-import peak</dt><dd>${ep.net_import_peak_mw.toFixed(1)} MW</dd><dt>max branch loading</dt><dd style="color:${run.loading_max>=1?'var(--bad)':'inherit'}">${(run.loading_max*100).toFixed(0)} %</dd>`;
+  // scenario table
+  const P=pol;
+  document.getElementById('es-table').innerHTML='<tr><th>scenario</th><th class="num">wind</th><th class="num">consumed</th><th class="num">surplus MWh</th><th class="num">net peak MW</th><th class="num">max load</th><th class="num">peak red. %</th><th class="num">Jain</th></tr>'+
+    ES.scenarios.map(x=>{const r=x.runs[P]||x.runs.none,e=r.episode;return `<tr class="${x.key===esKey?'sel':''}"><td>${x.label}</td><td class="num mono">${Math.round(x.wind_fraction*100)} %</td><td class="num mono">${(e.renewable_share_of_consumption*100).toFixed(0)} %</td><td class="num mono">${e.renewable_surplus_mwh.toFixed(0)}</td><td class="num mono">${e.net_import_peak_mw.toFixed(0)}</td><td class="num mono" style="color:${r.loading_max>=1?'var(--bad)':'inherit'}">${(r.loading_max*100).toFixed(0)} %</td><td class="num mono">${e.peak_reduction_pct.toFixed(1)}</td><td class="num mono">${e.jain_index.toFixed(2)}</td></tr>`;}).join('');
+  // stacked area chart
+  const M=document.getElementById('mix'); M.innerHTML=''; const W=640,H=250,L=46,R=14,T=14,B=30,pw=W-L-R,ph=H-T-B;
+  const mix=run.mix; const ymax=Math.ceil(Math.max(...mix.map(x=>Math.max(x.load_mw+x.losses_mw+x.surplus_mw,x.conv_mw+x.pv_mw+x.wind_mw)))/50)*50;
+  const x=i=>L+i/23*pw, y=v=>T+ph-v/ymax*ph;
+  for(let v=0;v<=ymax;v+=50){el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--line)','stroke-width':.6},M);el('text',{x:L-6,y:y(v)+3,'text-anchor':'end','font-size':9,fill:'var(--ink-3)'},M).textContent=v;}
+  for(let h=0;h<=23;h+=3)el('text',{x:x(h),y:H-10,'text-anchor':'middle','font-size':9,fill:'var(--ink-3)'},M).textContent=String(h).padStart(2,'0');
+  el('text',{x:L-34,y:T+2,'font-size':9,fill:'var(--ink-3)'},M).textContent='MW';
+  const area=(lo,hi,col,op)=>{let d='';mix.forEach((m,i)=>{d+=(i?'L':'M')+x(i).toFixed(1)+','+y(hi(m)).toFixed(1)+' ';});for(let i=mix.length-1;i>=0;i--){d+='L'+x(i).toFixed(1)+','+y(lo(mix[i])).toFixed(1)+' ';}el('path',{d:d+'Z',fill:col,opacity:op,stroke:'none'},M);};
+  area(m=>0,m=>Math.max(0,m.conv_mw),'var(--ink-3)',.55);
+  area(m=>Math.max(0,m.conv_mw),m=>Math.max(0,m.conv_mw)+m.wind_mw,'var(--grid-blue)',.7);
+  area(m=>Math.max(0,m.conv_mw)+m.wind_mw,m=>Math.max(0,m.conv_mw)+m.wind_mw+m.pv_mw,'var(--accent)',.75);
+  // surplus (export) drawn as red line above load where conv<0
+  const lp=mix.map((m,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(m.load_mw+m.losses_mw).toFixed(1)).join(' ');
+  el('path',{d:lp,fill:'none',stroke:'var(--ink)','stroke-width':2},M);
+  if(mix.some(m=>m.surplus_mw>0)){const sp=mix.map((m,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(m.load_mw+m.losses_mw+m.surplus_mw).toFixed(1)).join(' ');el('path',{d:sp,fill:'none',stroke:'var(--bad)','stroke-width':1.6,'stroke-dasharray':'4 3'},M);}
+  el('line',{x1:x(hour),x2:x(hour),y1:T,y2:T+ph,stroke:'var(--ink)','stroke-width':1,'stroke-dasharray':'2 2'},M);
+  el('text',{x:x(0)+4,y:T+10,'font-size':10,fill:'var(--ink-2)'},M).textContent=`${sc.group==='wind'?'80 % share · ':''}${sc.label}${sc.group==='wind'?'':' · wind '+Math.round(sc.wind_fraction*100)+' %'} · ${ {none:'no control',heuristic:'rule-based DR',mappo:'MAPPO'}[pol] } · system load incl. losses (black)`;
+  drawSweep();
+}
+// ---- sweep chart: whole-grid vs energy-share KPIs across all scenarios --------
+function drawSweep(){
+  const S=document.getElementById('sweep'); S.innerHTML=''; const W=1180,H=260,L=46,R=58,T=22,B=44,pw=W-L-R,ph=H-T-B;
+  const scs=ES.scenarios; const n=scs.length; const gw=pw/n; const bw=gw*0.2;
+  const rows=scs.map(x=>{const r=x.runs[pol]||x.runs.none,e=r.episode;return {label:x.label,group:x.group,peak:e.peak_reduction_pct,cons:e.renewable_share_of_consumption*100,load:r.loading_max*100,surplus:e.renewable_surplus_mwh,jain:e.jain_index};});
+  const ymax=Math.max(140,Math.ceil(Math.max(...rows.map(r=>r.load))/20)*20); const smax=Math.max(100,Math.ceil(Math.max(...rows.map(r=>r.surplus))/500)*500);
+  const y=v=>T+ph-v/ymax*ph, ys=v=>T+ph-v/smax*ph;
+  for(let v=0;v<=ymax;v+=20){el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--line)','stroke-width':.6},S);el('text',{x:L-6,y:y(v)+3,'text-anchor':'end','font-size':9,fill:'var(--ink-3)'},S).textContent=v;}
+  el('text',{x:L-40,y:T-8,'font-size':9,fill:'var(--ink-3)'},S).textContent='%';
+  for(let v=0;v<=smax;v+=smax/4){el('text',{x:W-R+8,y:ys(v)+3,'font-size':9,fill:'var(--bad)'},S).textContent=v;}
+  el('text',{x:W-R+8,y:T-8,'font-size':9,fill:'var(--bad)'},S).textContent='MWh';
+  el('line',{x1:L,x2:W-R,y1:y(100),y2:y(100),stroke:'var(--bad)','stroke-width':1,'stroke-dasharray':'4 3'},S);
+  let sep=null;
+  rows.forEach((r,i)=>{const cx=L+gw*(i+0.5);
+    if(r.group==='wind'&&sep===null){sep=L+gw*i;el('line',{x1:sep,x2:sep,y1:T-4,y2:T+ph,stroke:'var(--ink-3)','stroke-width':1,'stroke-dasharray':'3 3'},S);}
+    const bars=[['var(--ink-3)',r.peak],['var(--good)',r.cons],['var(--grid-blue)',r.load]];
+    bars.forEach(([c,v],k)=>{const bx=cx+(k-1.5)*bw;el('rect',{x:bx,y:y(v),width:bw-1,height:Math.max(0,T+ph-y(v)),fill:c,opacity:.85,rx:1},S);el('text',{x:bx+bw/2,y:y(v)-3,'text-anchor':'middle','font-size':8,fill:'var(--ink-2)'},S).textContent=v.toFixed(0);});
+    const dx=cx+2.2*bw; el('path',{d:`M${dx},${ys(r.surplus)-5} l5,5 l-5,5 l-5,-5 Z`,fill:r.surplus>0?'var(--bad)':'var(--line)'},S);
+    if(r.surplus>0)el('text',{x:dx,y:ys(r.surplus)-8,'text-anchor':'middle','font-size':8,fill:'var(--bad)'},S).textContent=r.surplus.toFixed(0);
+    const sel=scs[i].key===esKey; el('text',{x:cx,y:H-28,'text-anchor':'middle','font-size':9.5,fill:sel?'var(--accent-ink)':'var(--ink-2)','font-weight':sel?600:400},S).textContent=r.label;
+    el('text',{x:cx,y:H-16,'text-anchor':'middle','font-size':8.5,fill:'var(--ink-3)'},S).textContent=`wind ${Math.round(scs[i].wind_fraction*100)} % · Jain ${r.jain.toFixed(2)}`;
+  });
+  const nShare=rows.filter(r=>r.group!=='wind').length;
+  el('text',{x:L+gw*nShare/2,y:H-3,'text-anchor':'middle','font-size':9,fill:'var(--ink-3)'},S).textContent='renewable share sweep · wind fraction 50 %';
+  if(sep!==null)el('text',{x:sep+gw*(n-nShare)/2,y:H-3,'text-anchor':'middle','font-size':9,fill:'var(--ink-3)'},S).textContent='wind-fraction sweep at 80 % share';
+  document.getElementById('sweep-meta').textContent=`${n} scenarios · ${ {none:'no control',heuristic:'rule-based DR',mappo:'MAPPO'}[pol] } · no-control day, seed ${D.meta.day}`;
+}
+// ---- dimensions & calculations ------------------------------------------------
+(function(){
+  if(!G) return; const nr=G.newton_raphson, sc=G.scaling;
+  document.getElementById('dims').innerHTML=`
+   <div><h4>Network</h4><p>IEEE 14-bus (pandapower <span class="mono">case14</span>) · S_base <span class="mono">100 MVA</span> · 14 buses, 15 lines, 5 transformers, 11 loads, 4 generators + slack, 1 shunt.</p><p>Bus types: slack B1 (1.06 pu, θ = 0), PV buses B2/B3/B6/B8 (fixed |V|, Q free), the rest PQ. Voltage labels 135 / 14 / 12 / 0.208 kV are pandapower's conversion of MATPOWER's baseKV — per-unit results do not depend on them.</p></div>
+   <div><h4>Power flow</h4><p>Newton–Raphson on the nodal balance P_i(V,θ) − P_i^spec = 0, Q_i(V,θ) − Q_i^spec = 0; Jacobian [∂P/∂θ ∂P/∂|V|; ∂Q/∂θ ∂Q/∂|V|]; tolerance 1e-8 MVA.</p><p>Nominal case: <span class="mono">${nr.iterations}</span> iterations; P: ${nr.gen_p_mw.toFixed(2)} = ${nr.load_p_mw.toFixed(2)} + ${nr.loss_p_mw.toFixed(2)} MW (mismatch ${nr.mismatch_p_mw.toExponential(1)}); Q: ${nr.gen_q_mvar.toFixed(2)} = ${nr.load_q_mvar.toFixed(2)} + ${nr.loss_q_mvar.toFixed(2)} ${nr.shunt_q_mvar<0?'−':'+'} ${Math.abs(nr.shunt_q_mvar).toFixed(2)} Mvar. Losses ${nr.loss_pct.toFixed(2)} %; slack supplies ${(nr.slack_share*100).toFixed(0)} %.</p></div>
+   <div><h4>Scaling & ratings</h4><p>Cluster = <span class="mono">${sc.homes_per_agent.toLocaleString()}</span> homes × ${sc.mean_kw_per_home.toFixed(2)} kW mean (${sc.peak_kw_per_home_aggregate.toFixed(2)} kW at the aggregate peak) → ${sc.cluster_mean_mw.toFixed(2)} MW mean, ${sc.cluster_peak_mw.toFixed(2)} MW peak; 14 clusters = ${sc.residential_peak_mw.toFixed(1)} MW (${(sc.residential_share_of_system_peak*100).toFixed(0)} % of system peak). Q = P · tan(acos 0.95) = ${sc.tan_phi.toFixed(3)} P.</p><p>Branch rating = 1.5 × nominal-case current (lines) / apparent power (transformers) → 66.7 % loading on the nominal day; voltage band 0.95–1.10 pu (B8 set-point 1.09). Renewables: unity-pf static generators, wind at B2, PV at the 11 load buses ∝ bus load.</p></div>
+   <div><h4>Per-unit conversions</h4><p>|V| pu = V / V_base (V_base = bus kV) · line loading = I / I_rated with I = S / (√3 · V_base) · transformer loading = S / S_rated, S = √(P² + Q²). At 18:00 on the nominal day the residential clusters add ${sc.residential_peak_mw.toFixed(1)} MW ≈ ${(sc.residential_peak_mw/100).toFixed(3)} pu on S_base — small against the 259 MW background, large on the 0.208 kV buses where it lands.</p></div>
+   <div><h4>Constraint signals (measured every hour)</h4><p>Voltage: Σ_bus max(0, 0.95 − |V|) + max(0, |V| − 1.10) · Thermal: Σ_branch max(0, loading − 1) · Comfort: per cluster, max(0, curtailed kWh − tolerance × flexible kWh). Phase 1 only records them (violation rate = share of hours with any cost > 0); Phase 2 prices them with Lagrange multipliers.</p></div>`;
+})();
+// ---- protocol benchmark, gate, next steps ------------------------------------
+(function(){
+  const P=D.protocol; const pill=document.getElementById('gate'), ph=document.getElementById('gate-phase');
+  if(!P){pill.textContent='gate: run evaluate.py';ph.textContent='pending';return;}
+  pill.textContent='Phase-1 gate '+(P.gate?'PASS':'FAIL'); pill.className='pill '+(P.gate?'good':'bad'); ph.textContent=P.gate?'PASS':'FAIL';
+  const names={none:'No control',heuristic:'Rule-based DR',ppo:'PPO (centralised)',ippo:'IPPO',mappo:'MAPPO'};
+  const f=(m,c,d)=>c>0?`${m.toFixed(d)} ± ${c.toFixed(d)}`:m.toFixed(d);
+  document.getElementById('bench20').innerHTML='<tr><th>policy</th><th class="num">seeds</th><th class="num">peak red. %</th><th class="num">Jain</th><th class="num">viol.</th><th class="num">cost</th></tr>'+
+    P.benchmark.map(r=>`<tr${r.policy==='mappo'?' style="font-weight:600"':''}><td>${names[r.policy]||r.policy}</td><td class="num mono">${r.n_seeds}</td><td class="num mono">${f(r.peak_reduction_pct_mean,r.peak_reduction_pct_ci95,1)}</td><td class="num mono">${f(r.jain_index_mean,r.jain_index_ci95,3)}</td><td class="num mono">${f(r.violation_rate_mean,r.violation_rate_ci95,2)}</td><td class="num mono">${Math.round(r.cost_total_mean).toLocaleString()}</td></tr>`).join('');
+  const m=P.benchmark.find(r=>r.policy==='mappo'), h=P.benchmark.find(r=>r.policy==='heuristic'); const cp=P.compute||{};
+  document.getElementById('gategrid').innerHTML=[
+    ['Phase-1 gate',P.gate?'PASS':'FAIL','baseline MARL converges on IEEE-14 and beats rule-based DR on peak',P.gate?'var(--good)':'var(--bad)'],
+    ['Peak reduction (20 days)',`MAPPO ${m?m.peak_reduction_pct_mean.toFixed(1):'–'} % vs rule ${h?h.peak_reduction_pct_mean.toFixed(1):'–'} %`,'target ≥ 15 %',''],
+    ['Convergence',`${cp.mappo?cp.mappo.converged:'–'} MAPPO seeds pass the written rule`,`${cp.mappo?Math.round(cp.mappo.env_steps_per_s):'–'} env-steps/s incl. learning`,''],
+    ['Energy share',`${ES.scenarios.length} mix scenarios · policies invariant to mix`,'Phase 2: net-load in observation, self-consumption in reward',''],
+  ].map(([t,v,d,c])=>`<div class="g"><div class="eyebrow">${t}</div><div class="v" style="color:${c||'var(--ink)'}">${v}</div><div class="d">${d}</div></div>`).join('');
+})();
+render();
+</script>

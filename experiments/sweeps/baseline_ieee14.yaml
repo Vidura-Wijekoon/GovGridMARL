@@ -1,9 +1,18 @@
-# Hyperparameter sweep for the Phase-1 baseline (m3-t4).
-# Run with the Hydra multirun sweeper, e.g.:
+# Hydra multirun sweep for the Phase-1 baselines (m3-t4).
+# Usage:
 #   python experiments/train.py -m +experiment=baseline_ieee14 \
-#     agent.lr=1e-4,3e-4,1e-3 agent.clip_eps=0.1,0.2,0.3
+#       agent=ppo,ippo,mappo seed=0,1,2,3,4
+#   python experiments/train.py -m +experiment=baseline_ieee14 agent=mappo \
+#       agent.lr=1e-4,3e-4,1e-3 agent.clip_eps=0.1,0.2,0.3 \
+#       agent.gae_lambda=0.9,0.95,0.99 train.n_steps=48,96,192
+# (W&B sweep equivalent below for the laptop GPU.)
+program: experiments/train.py
+method: grid
+metric: {name: eval_return, goal: maximize}
 parameters:
-  agent.lr: [1.0e-4, 3.0e-4, 1.0e-3]
-  agent.clip_eps: [0.1, 0.2, 0.3]
-  agent.gae_lambda: [0.9, 0.95, 0.99]
-  train.batch_size: [1024, 2048, 4096]
+  agent: {values: [ppo, ippo, mappo]}
+  seed: {values: [0, 1, 2, 3, 4]}
+  agent.lr: {values: [1.0e-4, 3.0e-4, 1.0e-3]}
+  agent.clip_eps: {values: [0.1, 0.2, 0.3]}
+  agent.gae_lambda: {values: [0.9, 0.95, 0.99]}
+  train.n_steps: {values: [48, 96, 192]}

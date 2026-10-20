@@ -1,6 +1,13 @@
-total_timesteps: 1_000_000
+# Training loop (m3-t5). Defaults sized for a laptop GPU / desktop CPU run;
+# the cloud smoke profile overrides total_timesteps (see experiment/*.yaml).
+total_timesteps: 500_000
 n_envs: 8
-batch_size: 2048
-n_epochs: 10
-seeds: [0, 1, 2, 3, 4]     # >= 5 seeds for significance (m3-t9)
-checkpoint_every: 50_000
+n_steps: 96                # 4 episodes per env per update -> 768 joint transitions
+eval_every: 10             # updates
+eval_episodes: 5
+checkpoint_every: 25
+log_every: 1
+convergence:               # m3-t6 criterion on smoothed mean return
+  patience: 15
+  tol: 0.05
+  std_tol: 0.05

@@ -30,7 +30,19 @@ grounded in the proposal Gantt. Source of truth: `GovGridMARL_Research_Path.html
 | 11 | Apr 2027 | Evaluation, DSR validation & write-up |
 | 12 | May 2027 | Finalise, submit & publish |
 
-## Month 1 - current focus (Jun 2026)
+## Status (updated 2026-09-06)
+
+| Month | Status | Evidence |
+|---|---|---|
+| 1 | complete (14/15; m1-t12 skipped by decision) | `docs/logs/month1_log.md`, CHANGELOG 0.1.x |
+| 2 | complete except m2-t15 (meeting to schedule) | CHANGELOG 0.2.0, `results/logs/validate_env_*.log` |
+| 3 | complete except m3-t9 five-seed laptop run and m3-t15 sign-off | CHANGELOG 0.3.0, `docs/reports/phase1_milestone_report.md` — **Phase-1 gate PASS** |
+| 3+ | supervisor additions done: power-flow/NR analysis + bus-selection evidence in dashboard, energy-share (generation mix) scenario + sweep | `scripts/grid_analysis.py`, `docs/design/grid_electrical_basis.md`, `results/tables/energy_share_summary.csv` |
+| 4 | next: fairness formulation on the measured constraint costs; energy-share-aware observation/reward | `configs/reward/fairness.yaml`, `agents/lagrangian.py` |
+
+Kick-start demo: double-click `Start_Show.bat` (Windows) or run `python scripts/showcase.py`.
+
+## Month 1 (Jun 2026)
 
 1. **Initialise version-controlled repo**  <- this deliverable
 2. Build reproducible Python environment (`environment.yml` / lockfile)

@@ -1,15 +1,22 @@
-"""Independent PPO multi-agent baseline (Phase 1, task m3-t2)."""
+"""Independent PPO multi-agent baseline (Phase 1, task m3-t2).
+
+Each household runs PPO on its *local* observation with a local critic
+(de Witt et al., 2020, "Is Independent Learning All You Need in the
+StarCraft Multi-Agent Challenge?"). Parameters are shared across agents
+with an agent-id one-hot by default; ``share_params: false`` trains one
+network per household.
+"""
 
 from __future__ import annotations
 
-from govgridmarl.agents.base import BaseAgent
+from govgridmarl.agents.ppo_core import PPOFamilyAgent
 
 
-class IPPOAgent(BaseAgent):  # pragma: no cover - stub
-    """Independent learners — one PPO per agent. TODO(m3-t2)."""
+class IPPOAgent(PPOFamilyAgent):
+    """Independent learners — decentralised actor *and* critic (m3-t2)."""
 
-    def act(self, observation):
-        raise NotImplementedError("IPPOAgent.act — scheduled for Month 3")
+    mode = "ippo"
+    team_reward = False
 
-    def update(self, batch):
-        raise NotImplementedError("IPPOAgent.update — scheduled for Month 3")
+
+__all__ = ["IPPOAgent"]

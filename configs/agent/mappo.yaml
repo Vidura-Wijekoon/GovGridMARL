@@ -1,7 +1,15 @@
-name: mappo
-_target_: govgridmarl.agents.mappo.MAPPOAgent
+name: mappo        # centralised critic, decentralised actors (m3-t3)
+_target_: govgridmarl.agents.make_agent
 lr: 3.0e-4
 gamma: 0.99
 gae_lambda: 0.95
 clip_eps: 0.2
-centralised_critic: true
+entropy_coef: 0.01
+value_coef: 0.5
+max_grad_norm: 0.5
+n_epochs: 10
+n_minibatches: 4
+hidden: [128, 128]
+share_params: true
+normalize_advantage: true
+value_clip: true

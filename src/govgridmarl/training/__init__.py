@@ -1,3 +1,5 @@
-"""Training loops and orchestration (Phase 1+)."""
+"""Training loops and orchestration (m3-t5)."""
 
-__all__ = []
+from govgridmarl.training.trainer import Trainer, convergence_test
+
+__all__ = ["Trainer", "convergence_test"]

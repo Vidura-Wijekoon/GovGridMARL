@@ -1,6 +1,8 @@
 # @package _global_
-# Phase-1 baseline: MAPPO convergence on IEEE-14 (Phase-1 milestone).
+# Phase-1 baseline: MAPPO convergence on IEEE-14 (Phase-1 milestone gate).
 defaults:
   - override /env: ieee14
   - override /agent: mappo
   - override /reward: efficiency
+train:
+  total_timesteps: 500_000

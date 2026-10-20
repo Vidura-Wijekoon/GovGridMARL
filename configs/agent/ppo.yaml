@@ -1,6 +1,15 @@
-name: ppo
-_target_: govgridmarl.agents.ppo.PPOAgent
+name: ppo          # centralised single-agent controller (m3-t1)
+_target_: govgridmarl.agents.make_agent
 lr: 3.0e-4
 gamma: 0.99
 gae_lambda: 0.95
 clip_eps: 0.2
+entropy_coef: 0.01
+value_coef: 0.5
+max_grad_norm: 0.5
+n_epochs: 10
+n_minibatches: 4
+hidden: [128, 128]
+share_params: true
+normalize_advantage: true
+value_clip: true
